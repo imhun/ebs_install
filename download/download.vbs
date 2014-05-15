@@ -1,11 +1,11 @@
-Dim srcPath
+ï»¿Dim srcPath
 Dim destPath
 Dim histPath
 Dim destHist
 Dim currDate
 
-' Includeº¯Êı£¬Í¨¹ıFSO×é¼ş¶ÁÈ¡Íâ²¿º¯ÊıÎÄ¼şÄÚÈİ
-' Í¨¹ıExecuteGlobalÔØÈë
+' Includeå‡½æ•°ï¼Œé€šè¿‡FSOç»„ä»¶è¯»å–å¤–éƒ¨å‡½æ•°æ–‡ä»¶å†…å®¹
+' é€šè¿‡ExecuteGlobalè½½å…¥
 Sub include(file)
     Dim fso, f, strcon
     Set fso = CreateObject("Scripting.FileSystemObject")
@@ -44,12 +44,12 @@ sub fileArch(fso,filename,file,path)
     end if
 end sub
 
-' ±éÀú¸ÃÄ¿Â¼¼°×ÓÄ¿Â¼.
+' éå†è¯¥ç›®å½•åŠå­ç›®å½•.
 '
-' Result: Ä¿Â¼ºÍÎÄ¼şµÄ×ÜÊı.
-' fileOut: Êä³öÎÄ¼ş£¬ÓÃÓÚÊä³ö±éÀú½á¹û.
-' fso: FileSystemObject¶ÔÏó.
-' sPath: Ä¿Â¼.
+' Result: ç›®å½•å’Œæ–‡ä»¶çš„æ€»æ•°.
+' fileOut: è¾“å‡ºæ–‡ä»¶ï¼Œç”¨äºè¾“å‡ºéå†ç»“æœ.
+' fso: FileSystemObjectå¯¹è±¡.
+' sPath: ç›®å½•.
 Function dirscan( fso, sPath,archPath)
     rt = 0
     Set currentFolder = Nothing
@@ -62,7 +62,7 @@ Function dirscan( fso, sPath,archPath)
     If Not (currentFolder is Nothing) Then
         ' Folders
         For Each subFolder in currentFolder.SubFolders
-            sfull = subFolder.Path     ' È«ÏŞ¶¨Ãû.
+            sfull = subFolder.Path     ' å…¨é™å®šå.
             's = "D" & vbTab & sfull & vbTab & subFolder.Name & vbTab  & "" & vbCrLf
             'fileOut.write s
             rt = rt + dirscan(fso, subFolder.Path,archPath)
@@ -72,8 +72,8 @@ Function dirscan( fso, sPath,archPath)
         ' Files
         For Each f in currentFolder.Files
             sbase = ""
-            sext = GetFileExtAndBaseName(f.Name, sbase)    ' À©Õ¹Ãû.
-            sfull = f.Path    ' È«ÏŞ¶¨Ãû.
+            sext = GetFileExtAndBaseName(f.Name, sbase)    ' æ‰©å±•å.
+            sfull = f.Path    ' å…¨é™å®šå.
             rt = rt + 1
             if sext ="sql" or sext="pls" or sext="plb" then
             	fileArch fso,f.Name,sfull,archPath
@@ -85,7 +85,7 @@ Function dirscan( fso, sPath,archPath)
     dirscan = rt
 End Function
 
-' ²âÊÔ
+' æµ‹è¯•
 Sub dotest
 		Set fso = CreateObject("Scripting.FileSystemObject")  
 		Set f = fso.OpenTextFile("download_conn.cfg", 1)
@@ -93,7 +93,7 @@ Sub dotest
 		f.Close
 		Set f=Nothing
 	
-		'»ñÈ¡Á¬½ÓÉèÖÃ
+		'è·å–è¿æ¥è®¾ç½®
 		Set html = CreateObject("htmlfile")
     	Set window = html.parentWindow
    		window.execScript "var json = "&strJson&"", "JScript"
@@ -109,7 +109,7 @@ Sub dotest
     	dblist=cfg.dblist
     	applist=cfg.applist
     	
-		'°üº¬ÎÄ¼ş´¦Àí¿â
+		'åŒ…å«æ–‡ä»¶å¤„ç†åº“
 		include "..\lib\lib.vbs"
 
     	currDir= GetCurrentFolderFullPath(fso) 	
@@ -126,22 +126,22 @@ Sub dotest
     	'Msgbox "begin:"&currDate&","&Date&" "&Time
     	rtdir="download_"&currDate&"_"&rd
     	
-    	'É¾³ıÏÂÔØÎÄ¼şÄ¿Â¼	
+    	'åˆ é™¤ä¸‹è½½æ–‡ä»¶ç›®å½•	
     	condir=currDir & "\"&rtDir
 	 	if fso.folderexists(condir) then  	
 			fso.deletefolder(condir)
 		end if
 		
-		'É¾³ı´úÂëÄ¿Â¼
+		'åˆ é™¤ä»£ç ç›®å½•
 		condir=currDir & "\code"
 	 	if fso.folderexists(condir) then  	
 			fso.deletefolder(condir)
 		end if
 		
 		cmds="%comspec% /k"
-		scpm=currPDir&"\lib\pscp.exe -q -r  -pw "&rpw 'sshÎÄ¼şÉÏ´«£¬ÏÂÔØÃüÁî
+		scpm=currPDir&"\lib\pscp.exe -q -r  -pw "&rpw 'sshæ–‡ä»¶ä¸Šä¼ ï¼Œä¸‹è½½å‘½ä»¤
 		
-    	sshm=currPDir&"\lib\plink.exe -ssh  -pw "&rpw&" "&ruser&"@"&rhost&" """ 'sshÃüÁî
+    	sshm=currPDir&"\lib\plink.exe -ssh  -pw "&rpw&" "&ruser&"@"&rhost&" """ 'sshå‘½ä»¤
     	
 		set ws=createobject("wscript.shell")
 		'host = WScript.FullName
@@ -161,32 +161,32 @@ Sub dotest
     	'end if
     		
     	listfile=""
-    	fmfile="perl -pi -e 's/^\xEF\xBB\xBF//' [file]; perl -pi -e 's/\r\n/\n/' [file];" 'ÁĞ±íÎÄ¼ş¸ñÊ½»¯£¬È¥³ıUTF-8µÄBOMÍ·£¬windows»»ĞĞ·û\r\n×ª»»Îªunix»»ĞĞ·û\n\
+    	fmfile="perl -pi -e 's/^\xEF\xBB\xBF//' [file]; perl -pi -e 's/\r\n/\n/' [file];" 'åˆ—è¡¨æ–‡ä»¶æ ¼å¼åŒ–ï¼Œå»é™¤UTF-8çš„BOMå¤´ï¼Œwindowsæ¢è¡Œç¬¦\r\nè½¬æ¢ä¸ºunixæ¢è¡Œç¬¦\n\
 
-		renv="NLS_LANG='"&nlslang&"';export NLS_LANG;. ./setenv.sh;" '»·¾³±äÁ¿
+		renv="NLS_LANG='"&nlslang&"';export NLS_LANG;. ./setenv.sh;" 'ç¯å¢ƒå˜é‡
     	
     	sshpre="cd $HOME/"&rtdir&"; chmod +x ./*; "&renv&"echo ""NLS_LANG=$NLS_LANG"";"
     	
     	sshupf=" echo ==)begin get ddl process: "&_
     			  " && "&sshm&" rm -rf ~/"&rtdir&"; mkdir ~/"&rtdir&";"""&_ 
     			  " && "&scpm&" "&currPDir&"\lib\common\ "&ruser&"@"&rhost&":"&rtdir&_
-    			  " && "&scpm&" "&currPDir&"\lib\download\ "&ruser&"@"&rhost&":"&rtdir 'É¾³ıÒÑÓĞÄ¿Â¼£¬²¢´´½¨ÁÙÊ±Ä¿Â¼,ÉÏ´«Ö´ĞĞ½Å±¾
+    			  " && "&scpm&" "&currPDir&"\lib\download\ "&ruser&"@"&rhost&":"&rtdir 'åˆ é™¤å·²æœ‰ç›®å½•ï¼Œå¹¶åˆ›å»ºä¸´æ—¶ç›®å½•,ä¸Šä¼ æ‰§è¡Œè„šæœ¬
     			  	
     	if dblist<>"" then
     		listfile=dblist
-    		sshupf=sshupf&" && "&scpm&" "&currDir&"\"&listfile&" "&ruser&"@"&rhost&":"&rtdir  'ÉÏ´«objlist
+    		sshupf=sshupf&" && "&scpm&" "&currDir&"\"&listfile&" "&ruser&"@"&rhost&":"&rtdir  'ä¸Šä¼ objlist
 	    	sshdbd=" && echo ==)begin execute db download:  "&_
 	    					" && "&sshm&sshpre&replace(fmfile,"[file]",listfile)&"slc_getddl_all.sh "&dbsid&" "&dbuser&" "&dbpw&" -f "&dblist&";"""&_ 
-	    					" && echo ==)execute db download completed  ! "     	'Éú³ÉdbÎÄ¼ş
+	    					" && echo ==)execute db download completed  ! "     	'ç”Ÿæˆdbæ–‡ä»¶
 	    end if	    	
 	    	
     	if applist<>"" then
     		listfile=applist
-    		sshupf=sshupf&" && "&scpm&" "&currDir&"\"&listfile&" "&ruser&"@"&rhost&":"&rtdir  'ÉÏ´«objlist
+    		sshupf=sshupf&" && "&scpm&" "&currDir&"\"&listfile&" "&ruser&"@"&rhost&":"&rtdir  'ä¸Šä¼ objlist
 	    	sshappd=" && echo ==)begin execute app download: "&_
 	    					" && "&sshm&sshpre&replace(fmfile,"[file]",listfile)&"perl download.pl placepath=. cfgfile=./download.cfg listfile=./"&applist&_
     						" appsusr="&dbuser&" appspwd="&dbpw&" logfile=./downapp.log dbschemapwd="&cuxpw&";"""&_ 
-    						" && echo ==)execute app download completed "'Éú³ÉappÎÄ¼ş
+    						" && echo ==)execute app download completed "'ç”Ÿæˆappæ–‡ä»¶
     	end if
     		
     	sshupf=sshupf&" && echo ==)uploaded scripts successful ! " 
@@ -194,7 +194,7 @@ Sub dotest
         sshdwf=" && echo ==)begin download file from server "&_
         				" && "&scpm&" "&ruser&"@"&rhost&":"&rtdir&"/ "&currDir&"\"&rtdir&"\"&_ 
         				" && "&sshm&" rm -rf ~/"&rtdir&";"""&_ 
-        				" && echo ==)download file completed  ! " 'ÏÂÔØÎÄ¼şµ½±¾µØ,É¾³ı·şÎñÆ÷ÁÙÊ±Ä¿Â¼
+        				" && echo ==)download file completed  ! " 'ä¸‹è½½æ–‡ä»¶åˆ°æœ¬åœ°,åˆ é™¤æœåŠ¡å™¨ä¸´æ—¶ç›®å½•
         
         'Wscript.echo(sshupf)
         'Wscript.echo(sshdbd)
@@ -206,38 +206,38 @@ Sub dotest
     	'Wscript.Echo(spt)
     	'Wscript.Echo(replace(spt,"&&",vbcrlf))
     	'Wscript.quit
-    	ret=ws.run(spt,1,true) 'Ö´ĞĞÏÂÔØÃüÁî
+    	ret=ws.run(spt,1,true) 'æ‰§è¡Œä¸‹è½½å‘½ä»¤
     	
 		'set sh=CreateObject("Shell.Application")
 		'sh.ShellExecute "cmd","/k "&prompt1&" && "&sshrm1&" && "&scpu1&" && "&scpu2&" && "&scpu3
     	
-    	'Set logObj = fso.opentextfile(currdir+"\exc.log", 2, True, -1)    ' ´ò¿ªÊä³öÎÄ¼ş. ForWriting, TristateTrue.
-    	'logObj.write replace(spt,"&&",vbcrlf)    ' ÈÕÖ¾.
+    	'Set logObj = fso.opentextfile(currdir+"\exc.log", 2, True, -1)    ' æ‰“å¼€è¾“å‡ºæ–‡ä»¶. ForWriting, TristateTrue.
+    	'logObj.write replace(spt,"&&",vbcrlf)    ' æ—¥å¿—.
 	  
-    	'logObj.Close    ' ¹Ø±ÕÊä³öÎÄ¼ş.
+    	'logObj.Close    ' å…³é—­è¾“å‡ºæ–‡ä»¶.
     	
     
         condir=currDir & "\"&rtDir&"\code"
 	 	if fso.folderexists(condir) then  	
-	        'ÕûÀíÎÄ¼ş
+	        'æ•´ç†æ–‡ä»¶
 	       copydir fso,condir,currDir&"\code"
 		end if
 		
 	    dbret=0
     	condir=currDir & "\"&rtDir&"\"&currDate
 	 	if fso.folderexists(condir) then  	
-	        'ÕûÀíÎÄ¼ş
+	        'æ•´ç†æ–‡ä»¶
 	        dbret=dirscan(fso,condir,currDir&"\code\db")
 		end if
 		
 		appret=0
     	condir=currDir & "\"&rtDir&"\code"
 	 	if fso.folderexists(condir) then  	
-	        'ÕûÀíÎÄ¼ş
+	        'æ•´ç†æ–‡ä»¶
 	        appret=dirscan(fso,condir,currDir&"\code")
 		end if
         Set fso=Nothing
-        Msgbox Date&" "&Time&",ÏÂÔØÊı¾İ¿âÎÄ¼ş:"&dbret&",ÏÂÔØ³ÌĞòÎÄ¼ş:"&appret
+        Msgbox Date&" "&Time&",ä¸‹è½½æ•°æ®åº“æ–‡ä»¶:"&dbret&",ä¸‹è½½ç¨‹åºæ–‡ä»¶:"&appret
         
 End Sub
 

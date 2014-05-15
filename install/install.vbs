@@ -1,11 +1,11 @@
-Dim srcPath
+ï»¿Dim srcPath
 Dim destPath
 Dim histPath
 Dim destHist
 Dim currDate
 
-' Includeº¯Êı£¬Í¨¹ıFSO×é¼ş¶ÁÈ¡Íâ²¿º¯ÊıÎÄ¼şÄÚÈİ
-' Í¨¹ıExecuteGlobalÔØÈë
+' Includeå‡½æ•°ï¼Œé€šè¿‡FSOç»„ä»¶è¯»å–å¤–éƒ¨å‡½æ•°æ–‡ä»¶å†…å®¹
+' é€šè¿‡ExecuteGlobalè½½å…¥
 Sub include(file)
     Dim fso, f, strcon
     Set fso = CreateObject("Scripting.FileSystemObject")
@@ -32,7 +32,7 @@ Function getResult(fso,logfile)
 	Set f=Nothing
 end function
 
-' ²âÊÔ
+' æµ‹è¯•
 Sub dotest
 		Set fso = CreateObject("Scripting.FileSystemObject")  
 		Set f = fso.OpenTextFile("install_conn.cfg", 1)
@@ -40,7 +40,7 @@ Sub dotest
 		f.Close
 		Set f=Nothing
 		
-		'°üº¬ÎÄ¼ş´¦Àí¿â
+		'åŒ…å«æ–‡ä»¶å¤„ç†åº“
 		include "..\lib\lib.vbs"
 		include "..\lib\aspjson.vbs"
 		
@@ -57,7 +57,7 @@ Sub dotest
 		end if
 		
 		if appexist=0 and dbexist=0 then
-			Msgbox "´úÂëÄ¿Â¼code\app,code\db²»´æÔÚ£¡"
+			Msgbox "ä»£ç ç›®å½•code\app,code\dbä¸å­˜åœ¨ï¼"
 			Wscript.quit
 		end if
 		
@@ -71,7 +71,7 @@ Sub dotest
 		    
 		
 		
-		'»ñÈ¡Á¬½ÓÉèÖÃ
+		'è·å–è¿æ¥è®¾ç½®
 		Set oJson=New aspJSON
 		
 		oJson.loadJSON(strJson)
@@ -87,18 +87,18 @@ Sub dotest
     	
 		logfile="exec.log"
 		cmds="%comspec% /k"
-		scpcm=currPDir&"\lib\pscp.exe -q -r  -pw [pwd]" 'sshÎÄ¼şÉÏ´«£¬ÏÂÔØÃüÁî
+		scpcm=currPDir&"\lib\pscp.exe -q -r  -pw [pwd]" 'sshæ–‡ä»¶ä¸Šä¼ ï¼Œä¸‹è½½å‘½ä»¤
 		
-    	sshcm=currPDir&"\lib\plink.exe -ssh  -pw [pwd] [user]@[host] """ 'sshÃüÁî
+    	sshcm=currPDir&"\lib\plink.exe -ssh  -pw [pwd] [user]@[host] """ 'sshå‘½ä»¤
     	
 		set ws=createobject("wscript.shell")
 
-		renv=". ./setenv.sh;" '»·¾³±äÁ¿
+		renv=". ./setenv.sh;" 'ç¯å¢ƒå˜é‡
     	
     	sshpre="cd $HOME/[rtdir]; pwd; chmod +x ./*; "&renv&"echo ""NLS_LANG=$NLS_LANG"";"
     	
     	icount=0
-    	resultstr="°²×°½á¹û£º"
+    	resultstr="å®‰è£…ç»“æœï¼š"
     	For Each row in oahost
     		icount=icount+1
     		set ohost=oahost.item(row)
@@ -117,7 +117,7 @@ Sub dotest
     		rtdir="install_"&currDate&"_"&rd
     		prompt="==("&rhost&"): "
     	
-		  	'É¾³ıÏÂÔØÎÄ¼şÄ¿Â¼	
+		  	'åˆ é™¤ä¸‹è½½æ–‡ä»¶ç›®å½•	
 		  	condir=currDir & "\"&rtDir
 		 	if fso.folderexists(condir) then  	
 				fso.deletefolder(condir)
@@ -125,7 +125,7 @@ Sub dotest
 			
 			sshpre=replace(sshpre,"[rtdir]",rtdir)
     		
-    		'É¾³ıÒÑÓĞÄ¿Â¼£¬²¢´´½¨ÁÙÊ±Ä¿Â¼,ÉÏ´«Ö´ĞĞ½Å±¾
+    		'åˆ é™¤å·²æœ‰ç›®å½•ï¼Œå¹¶åˆ›å»ºä¸´æ—¶ç›®å½•,ä¸Šä¼ æ‰§è¡Œè„šæœ¬
 	    	prm="echo  begin install process: && echo uploading file to server..... "
 	    			  
 	    	sshupf= sshm&" rm -rf ~/"&rtdir&"; mkdir ~/"&rtdir&";mkdir ~/"&rtdir&"/code;"""&_ 
@@ -145,12 +145,12 @@ Sub dotest
 	    	prm=" && echo begin execute install: "
 	    	sshinst=sshm&sshpre&"perl install.pl installpath=$HOME/"&rtdir&" cfgfile=$HOME/"&rtdir&"/install.cfg "&_
 	  						" appsusr="&dbuser&" appspwd="&dbpw&" dbschemapwd="&cuxpw&" logfile=$HOME/"&rtdir&"/"&prefixhost&"_install.log;"""
-	  	    sshinst=prm&" && "&sshinst&" && echo execute install completed " 'Ö´ĞĞ°²×°
+	  	    sshinst=prm&" && "&sshinst&" && echo execute install completed " 'æ‰§è¡Œå®‰è£…
 	    		
 	        prm=" && echo begin download file from server "
 	        sshdwf=		scpm&" "&ruser&"@"&rhost&":"&rtdir&"/"&prefixhost&"_install.log "&currDir&"\"&_ 
 	        				" && "&sshm&" rm -rf ~/"&rtdir&";"""
-	        sshdwf=prm&" && "&sshdwf&" && echo download file completed  ! " 'ÏÂÔØÈÕÖ¾ÎÄ¼şµ½±¾µØ,É¾³ı·şÎñÆ÷ÁÙÊ±Ä¿Â¼
+	        sshdwf=prm&" && "&sshdwf&" && echo download file completed  ! " 'ä¸‹è½½æ—¥å¿—æ–‡ä»¶åˆ°æœ¬åœ°,åˆ é™¤æœåŠ¡å™¨ä¸´æ—¶ç›®å½•
 	        
 	        'Wscript.echo(sshupf)
 	        'Wscript.echo(sshinst)
@@ -160,18 +160,18 @@ Sub dotest
 	    	'Wscript.Echo(spt)
 	    	'Wscript.Echo(replace(spt,"&&",vbcrlf))
 	    	'Wscript.quit
-	    	ret=ws.run(spt,1,true) 'Ö´ĞĞÏÂÔØÃüÁî
+	    	ret=ws.run(spt,1,true) 'æ‰§è¡Œä¸‹è½½å‘½ä»¤
 	    	
 	    	instres=getResult(fso,currdir&"\"&prefixhost&"_install.log")		    	
     		msgtype=0
 	    	if instres="S" then
-    			msgstr="Ó¦ÓÃ½Úµã("&rhost&")°²×°³É¹¦£¡"
+    			msgstr="åº”ç”¨èŠ‚ç‚¹("&rhost&")å®‰è£…æˆåŠŸï¼"
     			resultstr=resultstr&chr(10)&msgstr
     		elseif instres="E" then
-    			msgstr="Ó¦ÓÃ½Úµã("&rhost&")°²×°Ê§°Ü£¬ÏêÏ¸ĞÅÏ¢Çë¼ì²éÈÕÖ¾ÎÄ¼ş£¡"
+    			msgstr="åº”ç”¨èŠ‚ç‚¹("&rhost&")å®‰è£…å¤±è´¥ï¼Œè¯¦ç»†ä¿¡æ¯è¯·æ£€æŸ¥æ—¥å¿—æ–‡ä»¶ï¼"
     			resultstr=resultstr&chr(10)&msgstr
     			if hostcount>icount then
-    				msgstr=msgstr&chr(10)&"ÊÇ·ñ¼ÌĞø°²×°ÆäÓà½Úµã?"
+    				msgstr=msgstr&chr(10)&"æ˜¯å¦ç»§ç»­å®‰è£…å…¶ä½™èŠ‚ç‚¹?"
     				msgtype=4 
     			end if
     			

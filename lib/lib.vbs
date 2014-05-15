@@ -1,4 +1,4 @@
-'创建目录
+﻿'创建目录
 Sub CreateDir(Folder)
   Dim RegEx, arrFolder, thisFolder
   'MsgBox "hist:" & Folder
