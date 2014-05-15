@@ -74,3 +74,27 @@ Function GetMAC()
     Next
     Set mc = nothing
 End Function
+
+Function cmdproc(cmdstr,logfile,isecho,prompt) 
+	a=split(cmdstr,"&&")
+	res=""
+	for each row in a
+	   	cmdline=row
+	   	logline =""
+	   	if logfile <>"" then
+	   		logline=" >>"&logfile
+	   	end if
+		 if lcase(left(trim(cmdline),4))="echo" then
+		 	cmdline=replace(cmdline,"echo","echo "&prompt)&logline
+		 else
+		  	cmdline="echo "&prompt&cmdline&logline&" && "&cmdline&logline
+		end if
+		if res="" then
+			res=cmdline
+	 	else
+			res=res&" && "&cmdline
+		end if
+	next
+	
+	cmdproc=res
+end function 

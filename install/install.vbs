@@ -34,16 +34,41 @@ end function
 
 ' 测试
 Sub dotest
-		
 		Set fso = CreateObject("Scripting.FileSystemObject")  
 		Set f = fso.OpenTextFile("install_conn.cfg", 1)
 		strJson = f.ReadAll
 		f.Close
 		Set f=Nothing
-		    
+		
 		'包含文件处理库
 		include "..\lib\lib.vbs"
 		include "..\lib\aspjson.vbs"
+		
+    	currDir= GetCurrentFolderFullPath(fso) 	
+    	currPDir=fso.GetParentFolderName(currdir)
+    	currDate=CStr(Year(Now()))&Right("0"&Month(Now()),2)&Right("0"&Day(Now()),2)
+    	appexist=0
+    	dbexist=0
+		if fso.folderexists(currDir&"\code\app") then
+			appexist=1
+		end if
+		if fso.folderexists(currDir&"\code\db") then
+			dbexist=1
+		end if
+		
+		if appexist=0 and dbexist=0 then
+			Msgbox "代码目录code\app,code\db不存在！"
+			Wscript.quit
+		end if
+		
+    	dim maxB,minB
+		maxB=10000
+		minb=1
+		'Randomize
+		rd=Int((maxB-minB+1)*Rnd+minB)
+    	
+    	'Msgbox "begin:"&currDate&","&Date&" "&Time
+		    
 		
 		
 		'获取连接设置
@@ -59,21 +84,9 @@ Sub dotest
     	cuxpw=odb("cuxpwd")
     	
 		hostcount=oahost.count
-
-    	currDir= GetCurrentFolderFullPath(fso) 	
-    	currPDir=fso.GetParentFolderName(currdir)
-    	currDate=CStr(Year(Now()))&Right("0"&Month(Now()),2)&Right("0"&Day(Now()),2)
     	
-    	dim maxB,minB
-		maxB=10000
-		minb=1
-		'Randomize
-		rd=Int((maxB-minB+1)*Rnd+minB)
-    	
-    	'Msgbox "begin:"&currDate&","&Date&" "&Time
-    	
-		
-		cmds="%comspec% /c"
+		logfile="exec.log"
+		cmds="%comspec% /k"
 		scpcm=currPDir&"\lib\pscp.exe -q -r  -pw [pwd]" 'ssh文件上传，下载命令
 		
     	sshcm=currPDir&"\lib\plink.exe -ssh  -pw [pwd] [user]@[host] """ 'ssh命令
@@ -102,7 +115,7 @@ Sub dotest
 	    	 		
     		prefixhost=replace(rhost,".","_")
     		rtdir="install_"&currDate&"_"&rd
-    		prompt="==("&rhost&")== "
+    		prompt="==("&rhost&"): "
     	
 		  	'删除下载文件目录	
 		  	condir=currDir & "\"&rtDir
@@ -113,34 +126,36 @@ Sub dotest
 			sshpre=replace(sshpre,"[rtdir]",rtdir)
     		
     		'删除已有目录，并创建临时目录,上传执行脚本
-	    	sshupf=" echo "&prompt&"begin install process: "&_
-	    			  " && echo "&prompt&"uploading file to server..... "&_
-	    			  " && "&sshm&" rm -rf ~/"&rtdir&"; mkdir ~/"&rtdir&";mkdir ~/"&rtdir&"/code;"""&_ 
-	    			  " && "& scpm&" "&currPDir&"\lib\common\ "&ruser&"@"&rhost&":"&rtdir &_ 
-	    			  " && "& scpm&" "&currPDir&"\lib\install\ "&ruser&"@"&rhost&":"&rtdir &_ 
-	    			  " && "&scpm&" "&currDir&"\code\app "&ruser&"@"&rhost&":"&rtdir&"/code"
+	    	prm="echo  begin install process: && echo uploading file to server..... "
 	    			  
-	    	if rtype="master" then
+	    	sshupf= sshm&" rm -rf ~/"&rtdir&"; mkdir ~/"&rtdir&";mkdir ~/"&rtdir&"/code;"""&_ 
+	    			  " && "&scpm&" "&currPDir&"\lib\common\ "&ruser&"@"&rhost&":"&rtdir &_ 
+	    			  " && "& scpm&" "&currPDir&"\lib\install\ "&ruser&"@"&rhost&":"&rtdir
+	    			  
+  			if appexist=1 then
+  			  sshupf=sshupf&" && "&scpm&" "&currDir&"\code\app "&ruser&"@"&rhost&":"&rtdir&"/code"
+  			end if
+  			  
+	    	if rtype="master" and dbexist=1 then
 	    		sshupf=sshupf&" && "&scpm&" "&currDir&"\code\db "&ruser&"@"&rhost&":"&rtdir&"/code"
 	    	end if	
 	    	
-	    	sshupf=sshupf&" && echo "&prompt&"upload file successful ! " 
+	    	sshupf=prm &" && "&sshupf&" && echo upload file successful ! " 
 		
-	    	sshinst=" && echo "&prompt&"begin execute install: "&_
-	    					" && "&sshm&sshpre&"perl install.pl installpath=$HOME/"&rtdir&" cfgfile=$HOME/"&rtdir&"/install.cfg "&_
-	  						" appsusr="&dbuser&" appspwd="&dbpw&" dbschemapwd="&cuxpw&" logfile=$HOME/"&rtdir&"/"&prefixhost&"_install.log;"""&_ 
-	  						" && echo "&prompt&"execute install completed " '执行安装
+	    	prm=" && echo begin execute install: "
+	    	sshinst=sshm&sshpre&"perl install.pl installpath=$HOME/"&rtdir&" cfgfile=$HOME/"&rtdir&"/install.cfg "&_
+	  						" appsusr="&dbuser&" appspwd="&dbpw&" dbschemapwd="&cuxpw&" logfile=$HOME/"&rtdir&"/"&prefixhost&"_install.log;"""
+	  	    sshinst=prm&" && "&sshinst&" && echo execute install completed " '执行安装
 	    		
-	    	
-	        sshdwf=" && echo "&prompt&"begin download file from server "&_
-	        				" && "&scpm&" "&ruser&"@"&rhost&":"&rtdir&"/"&prefixhost&"_install.log "&currDir&"\"&_ 
-	        				" && "&sshm&" rm -rf ~/"&rtdir&";"""&_ 
-	        				" && echo "&prompt&"download file completed  ! " '下载日志文件到本地,删除服务器临时目录
+	        prm=" && echo begin download file from server "
+	        sshdwf=		scpm&" "&ruser&"@"&rhost&":"&rtdir&"/"&prefixhost&"_install.log "&currDir&"\"&_ 
+	        				" && "&sshm&" rm -rf ~/"&rtdir&";"""
+	        sshdwf=prm&" && "&sshdwf&" && echo download file completed  ! " '下载日志文件到本地,删除服务器临时目录
 	        
 	        'Wscript.echo(sshupf)
 	        'Wscript.echo(sshinst)
 	        'Wscript.echo(sshdwf)
-	    	spt=cmds&sshupf&sshinst&sshdwf
+	    	spt=cmds&cmdproc(sshupf&sshinst&sshdwf,"",1,prompt)
 	   
 	    	'Wscript.Echo(spt)
 	    	'Wscript.Echo(replace(spt,"&&",vbcrlf))
@@ -159,12 +174,14 @@ Sub dotest
     				msgstr=msgstr&chr(10)&"是否继续安装其余节点?"
     				msgtype=4 
     			end if
+    			
+    			setnum = MsgBox(msgstr,msgtype)
+	  			if setnum=7 then
+	  				Exit for
+	  			end if
   			end if
   			
-  			setnum = MsgBox(msgstr,msgtype)
-  			if setnum=7 then
-  				Exit for
-  			end if
+  			
     	Next
     	
     	Msgbox(resultstr)
