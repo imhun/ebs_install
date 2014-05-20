@@ -1,4 +1,4 @@
-﻿'创建目录
+'创建目录
 Sub CreateDir(Folder)
   Dim RegEx, arrFolder, thisFolder
   'MsgBox "hist:" & Folder
@@ -97,4 +97,18 @@ Function cmdproc(cmdstr,logfile,isecho,prompt)
 	next
 	
 	cmdproc=res
-end function 
+end function
+
+Function getShType(ws,sshm)
+	host = WScript.FullName
+	If LCase( right(host, len(host)-InStrRev(host,"\")) ) = "wscript.exe" Then
+	   ws.run "cscript """ & WScript.ScriptFullName & chr(34), 0
+	   WScript.Quit
+	End If
+	
+  	spt=sshm&"echo $0"""
+	set oexec=ws.exec(spt)
+  	rshtype=replace(oexec.StdOut.Readall,chr(10),"")
+  	'Msgbox "x"&rshtype&"x"
+  	getShType=rshtype
+end function

@@ -163,13 +163,13 @@ do
     if [ "$type" = "TABLE" ]
     then
         type="ORA_SQL_TMP"
-    elif [ "$type" = "PACKAGE" ]
+    elif [ "$type" = "PACKAGE_SPEC" ]
     then
         type="ORA_PACKAGE_SPEC"
-    elif [ "$type" = "PACKAGE BODY" ]
+    elif [ "$type" = "PACKAGE_BODY" ]
     then
         type="ORA_PACKAGE_BODY"
-    elif [ "$type" = "MATERIALIZED VIEW" ]
+    elif [ "$type" = "MATERIALIZED_VIEW" ]
     then
         type="ORA_MATERIALIZED_VIEW"
     else

@@ -92,8 +92,9 @@ Sub dotest
     	sshcm=currPDir&"\lib\plink.exe -ssh  -pw [pwd] [user]@[host] """ 'ssh命令
     	
 		set ws=createobject("wscript.shell")
-
-		renv=". ./setenv.sh;" '环境变量
+		
+	  	
+		renv=". ./setenv.sh;. [profile];" '环境变量
     	
     	sshpre="cd $HOME/[rtdir]; pwd; chmod +x ./*; "&renv&"echo ""NLS_LANG=$NLS_LANG"";"
     	
@@ -111,8 +112,15 @@ Sub dotest
     		sshm=replace(sshm,"[pwd]",rpwd)
     		scpm=replace(scpcm,"[pwd]",rpwd)
     		
-  		
+	  		rshtype=getShType(ws,sshm)
+			if rshtype ="ksh" then
+		  		rprof="~/.profile"
+		    elseif rshtype="bash" then
+		    	rprof="~/.bash_profile"
+		  	end if
 	    	 		
+    		sshpre=replace(sshpre,"[profile]",rprof)
+    		
     		prefixhost=replace(rhost,".","_")
     		rtdir="install_"&currDate&"_"&rd
     		prompt="==("&rhost&"): "

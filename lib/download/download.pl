@@ -720,7 +720,7 @@ sub getSqlScript
 		$sqlScript .= "SELECT TEXT\n";
 		$sqlScript .= "FROM user_source\n";
 		$sqlScript .= "WHERE name='$object_name'\n";
-		$sqlScript .= "and type=decode('$object_type','PACKAGE_SPECIAL','PACKAGE','PACKAGE_BODY','PACKAGE BODY','TRIGGER','TRIGGER')\n";
+		$sqlScript .= "and type=decode('$object_type','PACKAGE_SPEC','PACKAGE','PACKAGE_BODY','PACKAGE BODY','JAVA_SOURCE','JAVA SOURCE','TYPE_SPEC','TYPE','TYPE_BODY','TYPE BODY','$object_type')\n";
 		$sqlScript .= "ORDER BY LINE;\n";
 		
 		$sqlScript .= "SPOOL OFF\n";

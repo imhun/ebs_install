@@ -156,7 +156,7 @@ Sub dotest
 				oa=split(objline,"|")
 				otype=oa(0)
 				if otype="TABLE" or otype="VIEW" or otype="SYNONYM" _
-					or otype="SEQUENCE" or otype="PACKAGE" or otype="PACKAGE BODY"_
+					or otype="SEQUENCE" or otype="PACKAGE_SPEC" or otype="PACKAGE_BODY"_
 					or otype="PROCEDURE" or otype="FUNCTION"  or otype="TRIGGER" or otype="MATERIALIZED_VIEW" then
 					fdblist.writeline objline
 					dbcnt=dbcnt+1
@@ -176,7 +176,7 @@ Sub dotest
 			fdblist.close
 			fapplist.close
 		else
-			applist=listfile
+			applist=list
     	end if
     	
 		cmds="%comspec% /k"
@@ -185,28 +185,19 @@ Sub dotest
     	sshm=currPDir&"\lib\plink.exe -ssh  -pw "&rpw&" "&ruser&"@"&rhost&" """ 'ssh命令
     	
 		set ws=createobject("wscript.shell")
-		'host = WScript.FullName
-		'If LCase( right(host, len(host)-InStrRev(host,"\")) ) = "wscript.exe" Then
-		 '  ws.run "cscript """ & WScript.ScriptFullName & chr(34), 0
-		  ' WScript.Quit
-		'End If
-		
-    	'spt=sshm&"echo $0"""
-		'set oexec=ws.exec(spt)
-    	'rshtype=replace(oexec.StdOut.Readall,chr(10),"")
-    	'Msgbox "x"&rshtype&"x"
-    	'if rshtype ="ksh" then
-    	'	rprof="~/.profile;"
-      	'else
-      	'	rprof="~/.bash_profile;"
-    	'end if
+    	rshtype=getShType(ws,sshm)
+		if rshtype ="ksh" then
+	  		rprof="~/.profile"
+	    elseif rshtype="bash" then
+	    	rprof="~/.bash_profile"
+	  	end if
     		
     	listfile=""
     	fmfile="perl -pi -e 's/^\xEF\xBB\xBF|\xFF\xFE//' [file]; perl -pi -e 's/\r\n/\n/' [file];" '列表文件格式化，去除UTF-8的BOM头，windows换行符\r\n转换为unix换行符\n\
 
-		renv="NLS_LANG='"&nlslang&"';export NLS_LANG;. ./setenv.sh;" '环境变量
+		renv="NLS_LANG='"&nlslang&"';export NLS_LANG;./setenv.sh;. "&rprof&";" '环境变量
     	
-    	sshpre="cd $HOME/"&rtdir&"; chmod +x ./*; "&renv&"echo ""NLS_LANG=$NLS_LANG"";"
+    	sshpre="cd $HOME/"&rtdir&"; chmod +x ./*;"&renv&"echo ""NLS_LANG=$NLS_LANG"";"
     	
     	sshupf=" echo ==)begin get ddl process: && echo ==)uploading script file to server...... "&_
     			  " && "&sshm&" rm -rf ~/"&rtdir&"; mkdir ~/"&rtdir&";"""&_ 
