@@ -82,20 +82,19 @@ Function cmdproc(cmdstr,logfile,isecho,prompt)
 	   	cmdline=row
 	   	logline =""
 	   	if logfile <>"" then
-	   		logline=" >>"&logfile
+	   		logline=" >>" & logfile
 	   	end if
 		 if lcase(left(trim(cmdline),4))="echo" then
-		 	cmdline=replace(cmdline,"echo","echo "&prompt)&logline
+		 	cmdline=replace(cmdline,"echo","echo " & prompt) & logline
 		 else
-		  	cmdline="echo "&prompt&cmdline&logline&" && "&cmdline&logline
+		  	cmdline="echo " & prompt & cmdline & logline & " && " & cmdline & logline
 		end if
 		if res="" then
 			res=cmdline
 	 	else
-			res=res&" && "&cmdline
+			res=res & " && " & cmdline
 		end if
 	next
-	
 	cmdproc=res
 end function
 
@@ -108,7 +107,6 @@ Function getShType(ws,sshm)
 	
   	spt=sshm&"echo $0"""
 	set oexec=ws.exec(spt)
-  	rshtype=replace(oexec.StdOut.Readall,chr(10),"")
-  	'Msgbox "x"&rshtype&"x"
+  	rshtype=replace(replace(oexec.StdOut.Readall,chr(10),""),chr(13),"")
   	getShType=rshtype
 end function
