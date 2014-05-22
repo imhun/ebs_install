@@ -51,6 +51,7 @@ Function GetCurrentFolderFullPath(fso)
     GetCurrentFolderFullPath = fso.GetParentFolderName(WScript.ScriptFullName)
 End Function
 
+'复制文件
 sub cpfile(fso,src,dest)
 	if fso.FileExists(src) then
 		destDir=left(dest,instrrev(dest,"\"))
@@ -110,3 +111,24 @@ Function getShType(ws,sshm)
   	rshtype=replace(replace(oexec.StdOut.Readall,chr(10),""),chr(13),"")
   	getShType=rshtype
 end function
+
+Function Collection()
+		set Collection = CreateObject("Scripting.Dictionary")
+End Function
+
+Function QuickSort(Arr)
+    Dim i, j
+    Dim bound, t
+    bound = UBound(Arr)
+
+    For i = 0 To bound - 1
+        For j = i + 1 To bound
+            If Arr(i) > Arr(j) Then
+                t = Arr(i)
+                Arr(i) = Arr(j)
+                Arr(j) = t
+            End If
+        Next
+    Next
+    QuickSort = Arr
+End Function
