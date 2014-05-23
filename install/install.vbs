@@ -1,9 +1,3 @@
-Dim srcPath
-Dim destPath
-Dim histPath
-Dim destHist
-Dim currDate
-
 ' Include函数，通过FSO组件读取外部函数文件内容
 ' 通过ExecuteGlobal载入
 Sub include(file)
@@ -42,36 +36,33 @@ Sub dotest
 		
 		'包含文件处理库
 		include "..\lib\lib.vbs"
+		include "..\lib\lib_install.vbs"
 		include "..\lib\aspjson.vbs"
 		
     	currDir= GetCurrentFolderFullPath(fso) 	
     	currPDir=fso.GetParentFolderName(currdir)
     	currDate=CStr(Year(Now()))&Right("0"&Month(Now()),2)&Right("0"&Day(Now()),2)
+    	
+		Set filedata = Collection()
+    	filecnt=procFiles(fso,currDir,currDir)
+    	
     	appexist=0
     	dbexist=0
+    	
 		if fso.folderexists(currDir&"\code\app") then
 			appexist=1
 		end if
 		if fso.folderexists(currDir&"\code\db") then
 			dbexist=1
 		end if
-		
 		if appexist=0 and dbexist=0 then
 			Msgbox "代码目录code\app,code\db不存在！"
 			Wscript.quit
 		end if
 		
-    	dim maxB,minB
-		maxB=10000
-		minb=1
-		'Randomize
-		rd=Int((maxB-minB+1)*Rnd+minB)
+    	rd=getRandom(1,100000)
     	
-    	'Msgbox "begin:"&currDate&","&Date&" "&Time
-		    
-		
-		
-		'获取连接设置
+		'获取连接设置,读取json配置文件
 		Set oJson=New aspJSON
 		
 		oJson.loadJSON(strJson)
@@ -123,13 +114,13 @@ Sub dotest
 				fso.deletefolder(condir)
 			end if
 			
-			rshtype=getShType(ws,sshm)
+			rshtype=getShType(ws,sshm & "echo $0""")
 			if rshtype ="ksh" then
 		  		rprof="~/.profile"
 		    elseif rshtype="bash" then
 		    	rprof="~/.bash_profile"
 		  	end if
-			
+		  	
 			sshpre=replace(sshpre,"[profile]",rprof)
 			sshpre=replace(sshpre,"[rtdir]",rtdir)
     		
@@ -165,7 +156,6 @@ Sub dotest
 	        'Wscript.echo(sshdwf)
 	    	spt=cmds&cmdproc(sshupf&sshinst&sshdwf,"",1,prompt)
 	   
-	    	'Wscript.Echo(spt)
 	    	'Wscript.Echo(replace(spt,"&&",vbcrlf))
 	    	'Wscript.quit
 	    	ret=ws.run(spt,1,true) '执行下载命令

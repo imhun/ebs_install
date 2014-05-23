@@ -1,3 +1,5 @@
+Dim filedata
+'获取安装文件类型及其他属性
 Function getObjType(fso,fpath,fname,byref oname,byref olang,byref seq,byref instType,byref objDir)
 	sbase = ""
 	oname=""
@@ -20,6 +22,9 @@ Function getObjType(fso,fpath,fname,byref oname,byref olang,byref seq,byref inst
 		seq=110
 		instType="app"
 		objDir="forms"
+		if olang="" then
+			olang="ZHS"
+		end if
 	elseif sext="pll" then
 		otype= "RESOURCE"
 		oname="CUX." &Ucase(sbase)
@@ -32,12 +37,18 @@ Function getObjType(fso,fpath,fname,byref oname,byref olang,byref seq,byref inst
 		seq=120
 		instType="app"
 		objDir="reports"
+		if olang="" then
+			olang="ZHS"
+		end if
 	elseif sext="rtf" then
 		otype="XDO_TEMPLATE"
 		oname="CUX." & Ucase(sbase)
 		seq=130
 		instType="db"
 		objDir="xdoload\template"
+		if olang="" then
+			olang="ZHS"
+		end if
 	elseif sext="class" or sext ="xml" then
 		otype="OAF"
 		objDir="oaf"
@@ -195,6 +206,9 @@ Function getObjType(fso,fpath,fname,byref oname,byref olang,byref seq,byref inst
 					seq=90
 					instType="db"
 					objDir=lcase(otype)
+					if olang="" then
+						olang="ZHS"
+					end if
 					exit do
 				end if
 			end if		
@@ -206,41 +220,106 @@ Function getObjType(fso,fpath,fname,byref oname,byref olang,byref seq,byref inst
 	getObjType=otype
 end function
 
-function getObjPos(sfull)
-	pos=0
-	if instr(sfull,"\package\") >0 then
-  		pos= instr(sfull,"\package\")
-  	elseif instr(sfull,"\table\") >0 then
-  		pos= instr(sfull,"\table\")
-  	elseif instr(sfull,"\view\") >0 then
-  		pos= instr(sfull,"\view\")
-  	elseif instr(sfull,"\synonym\") >0 then
-  		pos= instr(sfull,"\synonym\")
-  	elseif instr(sfull,"\sequence\") >0 then
-  		pos= instr(sfull,"\sequence\")
-  	elseif instr(sfull,"\trigger\") >0 then
-  		pos= instr(sfull,"\trigger\")
-  	elseif instr(sfull,"\sql\") >0 then
-  		pos= instr(sfull,"\sql\")
-  	elseif instr(sfull,"\mv\") >0 then
-  		pos= instr(sfull,"\mv\")
-  	elseif instr(sfull,"\fndload\") >0 then
-  		pos= instr(sfull,"\fndload\")
-  	elseif instr(sfull,"\forms\") >0 then
-  		pos= instr(sfull,"\forms\")
-  	elseif instr(sfull,"\resource\") >0 then
-  		pos= instr(sfull,"\resource\")
-  	elseif instr(sfull,"\reports\") >0 then
-  		pos= instr(sfull,"\reports\")
-  	elseif instr(sfull,"\oaf\") >0 then
-  		pos= instr(sfull,"\oaf\")
-  	elseif instr(sfull,"\workflow\") >0 then
-  		pos= instr(sfull,"\workflow\")
-  	elseif instr(sfull,"\xdoload\") >0 then
-  		pos= instr(sfull,"\xdoload\")
-  	elseif instr(sfull,"\data\") >0 then
-  		pos= instr(sfull,"\data\")
-  	end if
-  	
-  	getObjPos=pos
+Function fileobj(fso,sfull,fname)
+    otype=""
+    sbase = ""
+    fext = GetFileExtAndBaseName(fname, sbase)    ' 扩展名.
+	otype=getObjType(fso,sfull,fname,oname,olang,seq,instType,objDir)
+	set obj=Collection()
+	obj("key")= seq & "_" & otype
+	obj("type")=otype
+	obj("name")=oname
+	obj("lang")=olang
+	obj("seq")=seq
+	obj("instType")=instType
+	obj("objDir")=objDir
+	obj("ext")=fext
+	obj("path")=sfull
+	obj("fname")=fname
+	 	
+	set fileobj=obj
+end function
+
+' 遍历该目录及子目录.
+'
+' Result: 目录和文件的总数.
+' fileOut: 输出文件，用于输出遍历结果.
+' fso: FileSystemObject对象.
+' sPath: 目录.
+Function dirobj(fso, ByVal sPath,eventNo,eventName)
+    rt = 0
+    Set currentFolder = Nothing
+    'MsgBox sPath
+    
+    On Error Resume Next
+    Set currentFolder = fso.GetFolder(sPath)
+    On Error Goto 0
+    
+    If Not (currentFolder is Nothing) Then  	
+		eventID=0
+		eventNm=""
+        ' Folders
+        For Each subFolder in currentFolder.SubFolders
+                
+     		if eventNo=0 then
+     			eventID=eventID+1
+     			eventNm=subFolder.name
+     			set filedata(eventID)=Collection()
+     	    else
+     	  		eventID=eventNo
+     	  		eventNm=eventName
+          	end if
+         
+            rt = rt + dirobj( fso, subFolder.Path,eventID,eventNm)        	
+        Next
+        
+       if eventNo=0 then
+     		set filedata(eventNo)=Collection()
+       		eventName=currentFolder.name
+       end if
+        ' Files
+       For Each f in currentFolder.Files            
+            sfull = f.Path    ' 全限定名.
+            rt = rt + 1
+            
+            set obj= fileobj(fso,sfull,f.name)
+		  	obj("eventNo")=eventNo
+		  	obj("eventName")=eventName
+            okey=obj("key")
+            idx=0
+            if filedata(eventNo).exists(okey) then
+            	idx=filedata(eventNo)(okey).count+1
+            	set filedata(eventNo)(okey)(idx)=obj
+            else
+            	idx=1
+            	set objs=Collection()
+            	set objs(idx)=obj
+            	set filedata(eventNo)(okey)=objs
+            end if          
+        Next
+    End If
+    
+    dirobj = rt
+End Function
+
+function procFiles(fso,srcpath,destPath)
+    
+	filecnt=dirObj(fso,srcpath,0,"")
+	filecnt=0
+	for each row in filedata
+		set eventObj=filedata(row)
+	    keys=QuickSort(eventObj.keys)
+	    
+	    for each key in keys
+	     	for each idx in eventObj(key).keys
+	    		set obj=eventObj(key)(idx)			   	
+			   	if obj("type")<>"" then
+			   		filecnt=filecnt+1
+				    relateDir=  obj("objDir") & "\" &  obj("lang")  & "\" &  obj("fname")  				    
+				  	cpFile fso,obj("path"),destPath & "\code\" & obj("instType") & "\" & relateDir
+			  	end if		  	
+	    	next
+	  	next
+  	next
+  	procFiles=filecnt
 end function

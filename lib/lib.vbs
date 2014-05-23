@@ -99,14 +99,7 @@ Function cmdproc(cmdstr,logfile,isecho,prompt)
 	cmdproc=res
 end function
 
-Function getShType(ws,sshm)
-	host = WScript.FullName
-	If LCase( right(host, len(host)-InStrRev(host,"\")) ) = "wscript.exe" Then
-	   ws.run "cscript """ & WScript.ScriptFullName & chr(34), 0
-	   WScript.Quit
-	End If
-	
-  	spt=sshm&"echo $0"""
+Function getShType(ws,spt)
 	set oexec=ws.exec(spt)
   	rshtype=replace(replace(oexec.StdOut.Readall,chr(10),""),chr(13),"")
   	getShType=rshtype
@@ -132,3 +125,8 @@ Function QuickSort(Arr)
     Next
     QuickSort = Arr
 End Function
+
+Function getRandom(minb,maxb)
+	Randomize
+	getRandom=Int((maxB-minB+1)*Rnd+minB)
+end function

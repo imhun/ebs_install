@@ -1,9 +1,3 @@
-Dim srcPath
-Dim destPath
-Dim histPath
-Dim destHist
-Dim currDate
-
 ' Include函数，通过FSO组件读取外部函数文件内容
 ' 通过ExecuteGlobal载入
 Sub include(file)
@@ -16,74 +10,6 @@ Sub include(file)
     Set fso=Nothing
     Set f=Nothing
 End Sub
-
-sub fileArch(fso,filename,file,path)
-    dpath=""
-	if instr(filename,"CREATE_PACKAGE_BODY_")>0 or  instr(filename,"CREATE_PACKAGE_SPEC_")>0 then
-		dpath=path&"\package\"
-	elseif  instr(filename,"CREATE_VIEW_")>0  then
-		dpath=path&"\view\"
-	elseif instr(filename,"CREATE_TABLE_")>0  then
-		dpath=path&"\table\"
-	elseif instr(filename,"CREATE_SYNONYM_")>0  then
-		dpath=path&"\synonym\"
-	elseif instr(filename,"CREATE_SEQUENCE_")>0  then
-		dpath=path&"\sequence\"
-	elseif instr(filename,"CREATE_MATERIALIZED_VIEW_")>0  then
-		dpath=path&"\mv\"
-	elseif instr(filename,"CREATE_TRIGGER_")>0  then
-		dpath=path&"\trigger\"
-	elseif instr(filename,"CREATE_PROCEDURE_")>0  then
-		dpath=path&"\procedure\"
-	elseif instr(filename,"CREATE_FUNCTION_")>0  then
-		dpath=path&"\function\"
-	end if
-    
-    if dpath<>"" then
-    	cpfile fso,file,dpath
-    end if
-end sub
-
-' 遍历该目录及子目录.
-'
-' Result: 目录和文件的总数.
-' fileOut: 输出文件，用于输出遍历结果.
-' fso: FileSystemObject对象.
-' sPath: 目录.
-Function dirscan( fso, sPath,archPath)
-    rt = 0
-    Set currentFolder = Nothing
-    'MsgBox sPath
-    
-    On Error Resume Next
-    Set currentFolder = fso.GetFolder(sPath)
-    On Error Goto 0
-    
-    If Not (currentFolder is Nothing) Then
-        ' Folders
-        For Each subFolder in currentFolder.SubFolders
-            sfull = subFolder.Path     ' 全限定名.
-            's = "D" & vbTab & sfull & vbTab & subFolder.Name & vbTab  & "" & vbCrLf
-            'fileOut.write s
-            rt = rt + dirscan(fso, subFolder.Path,archPath)
-          	
-        Next
-        
-        ' Files
-        For Each f in currentFolder.Files
-            sbase = ""
-            sext = GetFileExtAndBaseName(f.Name, sbase)    ' 扩展名.
-            sfull = f.Path    ' 全限定名.
-            rt = rt + 1
-            if sext ="sql" or sext="pls" or sext="plb" then
-            	fileArch fso,f.Name,sfull,archPath
-          	end if 
-            
-        Next
-    End If
-    
-    dirscan = rt
-End Function
 
 ' 测试
 Sub dotest
@@ -110,21 +36,16 @@ Sub dotest
     	list=cfg.listfile
     	dbtype=cfg.dbtype
     	
-    
-    	
 		'包含文件处理库
 		include "..\lib\lib.vbs"
+		include "..\lib\lib_install.vbs"
 
     	currDir= GetCurrentFolderFullPath(fso) 	
     	currPDir=fso.GetParentFolderName(currDir)
 
     	currDate=CStr(Year(Now()))&Right("0"&Month(Now()),2)&Right("0"&Day(Now()),2)
     	
-    	dim maxB,minB
-		maxB=10000
-		minb=1
-		'Randomize
-		rd=Int((maxB-minB+1)*Rnd+minB)
+    	rd=getRandom(1,100000)
     	
     	'Msgbox "begin:"&currDate&","&Date&" "&Time
     	rtdir="download_"&currDate&"_"&rd
@@ -190,7 +111,7 @@ Sub dotest
     	sshm=currPDir&"\lib\plink.exe -ssh  -pw "&rpw&" "&ruser&"@"&rhost&" """ 'ssh命令
     	
 		set ws=createobject("wscript.shell")
-    	rshtype=getShType(ws,sshm)
+		rshtype=getShType(ws,sshm & "echo $0""")
 		if rshtype ="ksh" then
 	  		rprof="~/.profile"
 	    elseif rshtype="bash" then
@@ -254,26 +175,9 @@ Sub dotest
 	  
     	'logObj.Close    ' 关闭输出文件.
     	
-    
-        condir=currDir & "\"&rtDir&"\code"
-	 	if fso.folderexists(condir) then  	
-	        '整理文件
-	       copydir fso,condir,currDir&"\code"
-		end if
-		
-	    dbret=0
-    	condir=currDir & "\"&rtDir&"\"&currDate
-	 	if fso.folderexists(condir) then  	
-	        '整理文件
-	        dbret=dirscan(fso,condir,currDir&"\code\db")
-		end if
-		
-		appret=0
-    	condir=currDir & "\"&rtDir&"\code"
-	 	if fso.folderexists(condir) then  	
-	        '整理文件
-	        appret=dirscan(fso,condir,currDir&"\code")
-		end if
+		Set filedata = Collection()
+    	filecnt=procFiles(fso,currDir&"\"&rtdir,currDir)
+    	
         if listdb<>"" then
         	fso.deletefile(currDir&"\"&listdb)
         end if
@@ -282,7 +186,7 @@ Sub dotest
         end if
         
         Set fso=Nothing
-        Msgbox Date&" "&Time&",数据库对象:"&dbret&",程序文件:"&appret
+        Msgbox Date&" "&Time&",下载文件数:"&filecnt
         
 End Sub
 
