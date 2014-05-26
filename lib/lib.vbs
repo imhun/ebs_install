@@ -130,3 +130,17 @@ Function getRandom(minb,maxb)
 	Randomize
 	getRandom=Int((maxB-minB+1)*Rnd+minB)
 end function
+
+sub setFileAttr(fso,fpath,attr)
+	Set f = fso.GetFile(fpath)
+	If not (f.attributes and attr) Then
+	   f.attributes = f.attributes + attr
+	End If
+end sub
+
+sub clearFileAttr(fso,fpath,attr)
+	Set f = fso.GetFile(fpath)
+	If (f.attributes and attr) Then
+	   f.attributes = f.attributes - attr
+	End If
+end sub

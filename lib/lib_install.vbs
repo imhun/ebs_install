@@ -230,6 +230,11 @@ Function fileobj(fso,sfull,fname)
 	obj("type")=otype
 	obj("name")=oname
 	obj("lang")=olang
+	if olang<>"" then
+		obj("langDir")="\" & olang & "\"
+	else
+		obj("langDir")="\"
+	end if
 	obj("seq")=seq
 	obj("instType")=instType
 	obj("objDir")=objDir
@@ -315,8 +320,12 @@ function procFiles(fso,srcpath,destPath)
 	    		set obj=eventObj(key)(idx)			   	
 			   	if obj("type")<>"" then
 			   		filecnt=filecnt+1
-				    relateDir=  obj("objDir") & "\" &  obj("lang")  & "\" &  obj("fname")  				    
-				  	cpFile fso,obj("path"),destPath & "\code\" & obj("instType") & "\" & relateDir
+				    relateDir=  obj("objDir") & obj("langDir")  &  obj("fname")  	
+				    destFile=destPath & "\code\" & obj("instType") & "\" & relateDir
+				    'if fso.fileexists(destFile) then
+				    '	clearFileAttr fso,destFile,1
+				    'end if			    
+				  	cpFile fso,obj("path"),destFile
 			  	end if		  	
 	    	next
 	  	next

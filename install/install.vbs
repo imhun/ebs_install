@@ -97,75 +97,80 @@ Sub dotest
     		rhost=ohost.item("host")
     		ruser=ohost.item("user")
     		rpwd=ohost.item("pwd")
-    		sshm=replace(sshcm,"[host]",rhost)
-    		sshm=replace(sshm,"[user]",ruser)
-    		sshm=replace(sshm,"[pwd]",rpwd)
-    		scpm=replace(scpcm,"[pwd]",rpwd)
     		
-  		
-	    	 		
-    		prefixhost=replace(rhost,".","_")
-    		rtdir="install_"&currDate&"_"&rd
-    		prompt="==("&rhost&"): "
-    	
-		  	'删除下载文件目录	
-		  	condir=currDir & "\"&rtDir
-		 	if fso.folderexists(condir) then  	
-				fso.deletefolder(condir)
-			end if
-			
-			rshtype=getShType(ws,sshm & "echo $0""")
-			if rshtype ="ksh" then
-		  		rprof="~/.profile"
-		    elseif rshtype="bash" then
-		    	rprof="~/.bash_profile"
-		  	end if
-		  	
-			sshpre=replace(sshpre,"[profile]",rprof)
-			sshpre=replace(sshpre,"[rtdir]",rtdir)
-    		
-    		'删除已有目录，并创建临时目录,上传执行脚本
-	    	prm="echo  begin install process: && echo uploading file to server..... "
-	    			  
-	    	sshupf= sshm&" rm -rf ~/"&rtdir&"; mkdir ~/"&rtdir&";mkdir ~/"&rtdir&"/code;"""&_ 
-	    			  " && "&scpm&" "&currPDir&"\lib\common\ "&ruser&"@"&rhost&":"&rtdir &_ 
-	    			  " && "& scpm&" "&currPDir&"\lib\install\ "&ruser&"@"&rhost&":"&rtdir
-	    			  
-  			if appexist=1 then
-  			  sshupf=sshupf&" && "&scpm&" "&currDir&"\code\app "&ruser&"@"&rhost&":"&rtdir&"/code"
-  			end if
-  			  
-	    	if rtype="master" and dbexist=1 then
-	    		sshupf=sshupf&" && "&scpm&" "&currDir&"\code\db "&ruser&"@"&rhost&":"&rtdir&"/code"
-	    	end if	
-	    	
-	    	sshupf=prm &" && "&sshupf&" && echo upload file successful ! " 
-		
-	    	prm=" && echo begin execute install: "
-	    	sshinst=sshm&sshpre&"perl install.pl installpath=$HOME/"&rtdir&" cfgfile=$HOME/"&rtdir&"/install.cfg "&_
-	  						" appsusr="&dbuser&" appspwd="&dbpw&" dbschemapwd="&cuxpw&" logfile=$HOME/"&rtdir&"/"&prefixhost&"_install.log;"""
-	  	    sshinst=prm&" && "&sshinst&" && echo execute install completed " '执行安装
+	    	instRes=""
+    		if rtype="master" or appexist=1 then
+
+	    		sshm=replace(sshcm,"[host]",rhost)
+	    		sshm=replace(sshm,"[user]",ruser)
+	    		sshm=replace(sshm,"[pwd]",rpwd)
+	    		scpm=replace(scpcm,"[pwd]",rpwd)
 	    		
-	        prm=" && echo begin download file from server "
-	        sshdwf=		scpm&" "&ruser&"@"&rhost&":"&rtdir&"/"&prefixhost&"_install.log "&currDir&"\"&_ 
-	        				" && "&sshm&" rm -rf ~/"&rtdir&";"""
-	        sshdwf=prm&" && "&sshdwf&" && echo download file completed  ! " '下载日志文件到本地,删除服务器临时目录
-	        
-	        'Wscript.echo(sshupf)
-	        'Msgbox (sshinst)
-	        'Wscript.echo(sshdwf)
-	    	spt=cmds&cmdproc(sshupf&sshinst&sshdwf,"",1,prompt)
-	   
-	    	'Wscript.Echo(replace(spt,"&&",vbcrlf))
-	    	'Wscript.quit
-	    	ret=ws.run(spt,1,true) '执行下载命令
+	    		prefixhost=replace(rhost,".","_")
+	    		rtdir="install_"&currDate&"_"&rd
+	    		prompt="==("&rhost&"): "
 	    	
-	    	instres=getResult(fso,currdir&"\"&prefixhost&"_install.log")		    	
+			  	'删除下载文件目录	
+			  	condir=currDir & "\"&rtDir
+			 	if fso.folderexists(condir) then  	
+					fso.deletefolder(condir)
+				end if
+				
+				rshtype=getShType(ws,sshm & "echo $0""")
+				if rshtype ="ksh" then
+			  		rprof="~/.profile"
+			    elseif rshtype="bash" then
+			    	rprof="~/.bash_profile"
+			  	end if
+			  	
+				sshpre=replace(sshpre,"[profile]",rprof)
+				sshpre=replace(sshpre,"[rtdir]",rtdir)
+	    		
+	    		'删除已有目录，并创建临时目录,上传执行脚本
+		    	prm="echo  begin install process: && echo uploading file to server..... "
+		    			  
+		    	sshupf= sshm&" rm -rf ~/"&rtdir&"; mkdir ~/"&rtdir&";mkdir ~/"&rtdir&"/code;"""&_ 
+		    			  " && "&scpm&" "&currPDir&"\lib\common\ "&ruser&"@"&rhost&":"&rtdir &_ 
+		    			  " && "& scpm&" "&currPDir&"\lib\install\ "&ruser&"@"&rhost&":"&rtdir
+		    			  
+	  			if appexist=1 then
+	  			  sshupf=sshupf&" && "&scpm&" "&currDir&"\code\app "&ruser&"@"&rhost&":"&rtdir&"/code"
+	  			end if
+	  			  
+		    	if rtype="master" and dbexist=1 then
+		    		sshupf=sshupf&" && "&scpm&" "&currDir&"\code\db "&ruser&"@"&rhost&":"&rtdir&"/code"
+		    	end if	
+		    	
+		    	sshupf=prm &" && "&sshupf&" && echo upload file successful ! " 
+			
+		    	prm=" && echo begin execute install: "
+		    	sshinst=sshm&sshpre&"perl install.pl installpath=$HOME/"&rtdir&" cfgfile=$HOME/"&rtdir&"/install.cfg "&_
+		  						" appsusr="&dbuser&" appspwd="&dbpw&" dbschemapwd="&cuxpw&" logfile=$HOME/"&rtdir&"/"&prefixhost&"_install.log;"""
+		  	    sshinst=prm&" && "&sshinst&" && echo execute install completed " '执行安装
+		    		
+		        prm=" && echo begin download file from server "
+		        sshdwf=		scpm&" "&ruser&"@"&rhost&":"&rtdir&"/"&prefixhost&"_install.log "&currDir&"\"&_ 
+		        				" && "&sshm&" rm -rf ~/"&rtdir&";"""
+		        sshdwf=prm&" && "&sshdwf&" && echo download file completed  ! " '下载日志文件到本地,删除服务器临时目录
+		        
+		        'Wscript.echo(sshupf)
+		        'Msgbox (sshinst)
+		        'Wscript.echo(sshdwf)
+		    	spt=cmds&cmdproc(sshupf&sshinst&sshdwf,"",1,prompt)
+		   
+		    	'Wscript.Echo(replace(spt,"&&",vbcrlf))
+		    	'Wscript.quit
+		    	ret=ws.run(spt,1,true) '执行下载命令
+		    	
+		    	instres=getResult(fso,currdir&"\"&prefixhost&"_install.log")		
+		    else
+		    	resultstr=resultstr&chr(10)&"应用节点("&rhost&")无需安装"
+	    	end if	    	
     		msgtype=0
-	    	if instres="S" then
+	    	if instRes="S" then
     			msgstr="应用节点("&rhost&")安装成功！"
     			resultstr=resultstr&chr(10)&msgstr
-    		elseif instres="E" then
+    		elseif instRes="E" then
     			msgstr="应用节点("&rhost&")安装失败，详细信息请检查日志文件！"
     			resultstr=resultstr&chr(10)&msgstr
     			if hostcount>icount then
