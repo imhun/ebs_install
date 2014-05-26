@@ -758,7 +758,7 @@ sub printLogAndOut
   my $str= shift;
   my $toOut = shift;
   
-	if (($str =~ /^ERROR at line/)||($str =~ /^Errors for PACKAGE/)||($str =~ /^Error at run/)||($str =~ /error occurred/)){
+	if (($str =~ /^ERROR at line/)||($str =~ /^Errors for PACKAGE/)||($str =~ /^Error at run/)||($str =~ /error occurred/)||($str=~ /^Warning: Package/)){
 		$errcnt=$errcnt+1;
 		$str = "INSTALL_ERROR(".$errcnt.")\n".$str;
 	}
