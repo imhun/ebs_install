@@ -9,7 +9,7 @@ Function getObjType(fso,fobj,byref oname,byref olang,byref seq,byref instType,by
 	instType=""
 	objDir=""
 	fpath=fobj.path
-	path=fso.GetParentFolderName(fobj)
+	path=fobj.ParentFolder
     sext = Lcase(GetFileExtAndBaseName(fobj.name, sbase)) 
     cnt=0
     

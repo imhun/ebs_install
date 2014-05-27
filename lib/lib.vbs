@@ -47,8 +47,8 @@ Function GetFileExtAndBaseName(ByVal sfilename, ByRef sbasename)
 End Function
 
 '得到脚本文件所在的当前目录
-Function GetCurrentFolderFullPath(fso)
-    GetCurrentFolderFullPath = fso.GetParentFolderName(WScript.ScriptFullName)
+Function GetCurrentFolderFullPath(fso,path)
+    GetCurrentFolderFullPath = fso.GetParentFolderName(path)
 End Function
 
 '复制文件

@@ -40,7 +40,7 @@ Sub dotest
 		include "..\lib\lib.vbs"
 		include "..\lib\lib_install.vbs"
 
-    	currDir= GetCurrentFolderFullPath(fso) 	
+    	currDir= GetCurrentFolderFullPath(fso,Wscript.ScriptFullName) 	
     	currPDir=fso.GetParentFolderName(currDir)
 
     	currDate=CStr(Year(Now()))&Right("0"&Month(Now()),2)&Right("0"&Day(Now()),2)
