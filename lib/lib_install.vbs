@@ -1,13 +1,16 @@
 Dim filedata
+Dim langobj
 '获取安装文件类型及其他属性
-Function getObjType(fso,fpath,fname,byref oname,byref olang,byref seq,byref instType,byref objDir)
+Function getObjType(fso,fobj,byref oname,byref olang,byref seq,byref instType,byref objDir)
 	sbase = ""
 	oname=""
 	olang=""
 	seq=""
 	instType=""
 	objDir=""
-    sext = Lcase(GetFileExtAndBaseName(fname, sbase)) 
+	fpath=fobj.path
+	path=fso.GetParentFolderName(fobj)
+    sext = Lcase(GetFileExtAndBaseName(fobj.name, sbase)) 
     cnt=0
     
     if instr(fpath,"\ZHS\")>0 then
@@ -49,12 +52,12 @@ Function getObjType(fso,fpath,fname,byref oname,byref olang,byref seq,byref inst
 		if olang="" then
 			olang="ZHS"
 		end if
-	elseif sext="class" or sext ="xml" then
+	elseif instr(fpath,"\oaf\")>0 and (sext="class" or sext ="xml") then
 		otype="OAF"
-		objDir="oaf"
+		objDir=mid(path,instr(path,"\oaf\")+1)
 		seq=140
 		instType="app"
-	elseif sext="pls" or sext="plb" or sext="sql" or sext="ldt" or sext="wft" then
+	elseif sext="pls" or sext="plb" or sext="sql" or sext="ldt" or sext="wft" or sext="xml" then
    		Set f = fso.OpenTextFile(fpath, 1,true,0)
 		Do Until f.AtEndOfStream
 			strline=replace(Ucase(trim(f.ReadLine)),"""","")
@@ -220,11 +223,11 @@ Function getObjType(fso,fpath,fname,byref oname,byref olang,byref seq,byref inst
 	getObjType=otype
 end function
 
-Function fileobj(fso,sfull,fname)
+Function fileobj(fso,fobj)
     otype=""
     sbase = ""
-    fext = GetFileExtAndBaseName(fname, sbase)    ' 扩展名.
-	otype=getObjType(fso,sfull,fname,oname,olang,seq,instType,objDir)
+    fext = GetFileExtAndBaseName(fobj.name, sbase)    ' 扩展名.
+	otype=getObjType(fso,fobj,oname,olang,seq,instType,objDir)
 	set obj=Collection()
 	obj("key")= seq & "_" & otype
 	obj("type")=otype
@@ -239,8 +242,8 @@ Function fileobj(fso,sfull,fname)
 	obj("instType")=instType
 	obj("objDir")=objDir
 	obj("ext")=fext
-	obj("path")=sfull
-	obj("fname")=fname
+	obj("path")=fobj.path
+	obj("fname")=fobj.name
 	 	
 	set fileobj=obj
 end function
@@ -287,7 +290,7 @@ Function dirobj(fso, ByVal sPath,eventNo,eventName)
             sfull = f.Path    ' 全限定名.
             rt = rt + 1
             
-            set obj= fileobj(fso,sfull,f.name)
+            set obj= fileobj(fso,f)
 		  	obj("eventNo")=eventNo
 		  	obj("eventName")=eventName
             okey=obj("key")

@@ -43,6 +43,23 @@ Sub dotest
     	currPDir=fso.GetParentFolderName(currdir)
     	currDate=CStr(Year(Now()))&Right("0"&Month(Now()),2)&Right("0"&Day(Now()),2)
     	
+		
+    	
+		'获取连接设置,读取json配置文件
+		Set oJson=New aspJSON
+		
+		oJson.loadJSON(strJson)
+		set odb=oJson.data("db")
+		set oahost=oJson.data("app")
+		set langobj=oJson.data("lang")
+		
+    	dbsid=odb("sid")
+    	dbuser=odb("user")
+    	dbpw=odb("pwd")
+    	cuxpw=odb("cuxpwd")
+    	
+		hostcount=oahost.count
+		
 		Set filedata = Collection()
     	filecnt=procFiles(fso,currDir,currDir)
     	
@@ -61,20 +78,6 @@ Sub dotest
 		end if
 		
     	rd=getRandom(1,100000)
-    	
-		'获取连接设置,读取json配置文件
-		Set oJson=New aspJSON
-		
-		oJson.loadJSON(strJson)
-		set odb=oJson.data("db")
-		set oahost=oJson.data("app")
-		
-    	dbsid=odb("sid")
-    	dbuser=odb("user")
-    	dbpw=odb("pwd")
-    	cuxpw=odb("cuxpwd")
-    	
-		hostcount=oahost.count
     	
 		logfile="exec.log"
 		cmds="%comspec% /k"
