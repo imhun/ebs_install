@@ -32,11 +32,7 @@ Sub dotest
 		'Set args = WScript.Arguments
 		
 		Set fso = CreateObject("Scripting.FileSystemObject")  
-		Set f = fso.OpenTextFile("install_conn.cfg", 1)
-		strJson = f.ReadAll
-		f.Close
-		Set f=Nothing
-		
+	
 		'包含文件处理库
 		include "..\lib\lib.vbs"
 		include "..\lib\lib_install.vbs"
@@ -55,12 +51,10 @@ Sub dotest
 	 	end if
     	
 		'获取连接设置,读取json配置文件
-		Set oJson=New aspJSON
-		
-		oJson.loadJSON(strJson)
-		set odb=oJson.data("db")
-		set oahost=oJson.data("app")
-		set langobj=oJson.data("lang")
+		set data=readConfig(fso,"install_conn.cfg")
+		set odb=data("db")
+		set oahost=data("app")
+		set langobj=data("lang")
 		
     	dbsid=odb("sid")
     	dbuser=odb("user")
@@ -71,6 +65,7 @@ Sub dotest
 		
 		Set filedata = Collection()
     	filecnt=procFiles(fso,srcPath,currDir)
+    	'Wscript.quit
     	appexist=0
     	dbexist=0
     	

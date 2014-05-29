@@ -1,8 +1,40 @@
 Dim filedata
-Dim langobj
+Dim langcfg
+Dim defLang
+Dim extcfg
+Dim definecfg
+
+Function readConfig(fso,cfgFile)
+	Set f = fso.OpenTextFile(cfgFile, 1)
+	strJson = f.ReadAll
+	f.Close
+	Set f=Nothing
+	
+	Set oJson=New aspJSON	
+	oJson.loadJSON(strJson)
+	
+	set readConfig=oJson.data
+end function
+
+sub getTypeCfg(fso) 
+	set data=readConfig(fso,"..\lib\type.cfg")
+	set langcfg=data("lang")
+	set extcfg=data("ext")
+	set definecfg=data("define")
+	
+	for each key in langcfg
+		set lang=langcfg(key)
+		if lang("type")="default" then
+			deflang=lang("code")
+		end if
+	next
+end sub
+
 '获取安装文件类型及其他属性
 Function getObjType(fso,fobj,byref oname,byref olang,byref seq,byref instType,byref objDir)
 	sbase = ""
+	otype=""
+	app=""
 	oname=""
 	olang=""
 	seq=""
@@ -11,215 +43,112 @@ Function getObjType(fso,fobj,byref oname,byref olang,byref seq,byref instType,by
 	fpath=fobj.path
 	path=fobj.ParentFolder
     sext = Lcase(GetFileExtAndBaseName(fobj.name, sbase)) 
-    cnt=0
-    
-    if instr(fpath,"\ZHS\")>0 then
-    	olang="ZHS"
-    elseif instr(fpath,"\US\")>0 then
-    	olang="US"
-    end if
-    
-	if sext="fmb" then
-		otype="FORM"
-		oname="CUX." & Ucase(sbase)
-		seq=110
-		instType="app"
-		objDir="forms"
-		if olang="" then
-			olang="ZHS"
-		end if
-	elseif sext="pll" then
-		otype= "RESOURCE"
-		oname="CUX." &Ucase(sbase)
-		seq=100
-		instType="app"
-		objDir="resource"
-	elseif sext="rdf" then
-		otype="REPORT"
-		oname="CUX." & Ucase(sbase)
-		seq=120
-		instType="app"
-		objDir="reports"
-		if olang="" then
-			olang="ZHS"
-		end if
-	elseif sext="rtf" then
-		otype="XDO_TEMPLATE"
-		oname="CUX." & Ucase(sbase)
-		seq=130
-		instType="db"
-		objDir="xdoload\template"
-		if olang="" then
-			olang="ZHS"
-		end if
-	elseif instr(fpath,"\oaf\")>0 and (sext="class" or sext ="xml") then
-		otype="OAF"
-		objDir=mid(path,instr(path,"\oaf\")+1)
-		seq=140
-		instType="app"
-	elseif sext="pls" or sext="plb" or sext="sql" or sext="ldt" or sext="wft" or sext="xml" then
-   		Set f = fso.OpenTextFile(fpath, 1,true,0)
-		Do Until f.AtEndOfStream
-			strline=replace(Ucase(trim(f.ReadLine)),"""","")
-			if sext ="sql" or sext="pls" or sext="plb" then		
-				if instr(strline,"CREATE TABLE")>0 then
-					otype="TABLE"
-					stype="CREATE TABLE"	
-					seq=10
-					instType="db"
-					objDir="table"
-				elseif instr(strline,"ALTER TABLE")>0 then					
-					otype="TABLE_ALTER"
-					stype="ALTER TABLE"
-					seq=10
-					instType="db"
-					objDir="table"
-				elseif instr(strline,"CREATE GLOBAL TEMPORARY TABLE")>0 then
-					otype="TABLE"
-					stype="CREATE GLOBAL TEMPORARY TABLE"
-					seq=10
-					instType="db"
-					objDir="table"
-				elseif instr(strline,"CREATE OR REPLACE SYNONYM")>0 then
-					otype="SYNONYM"
-					stype="CREATE OR REPLACE SYNONYM"
-					seq=20
-					instType="db"
-					objDir="synonym"
-				elseif instr(strline,"CREATE SEQUENCE")>0 then
-					otype="SEQUENCE"
-					stype="CREATE SEQUENCE"
-					seq=30
-					instType="db"
-					objDir="sequence"
-				elseif instr(strline,"CREATE INDEX")>0 then
-					otype="TABLE_INDEX"
-					stype="CREATE INDEX"
-					seq=35
-					instType="db"
-					objDir="sql"
-				elseif instr(strline,"INSERT INTO")>0 then
-					otype="TABLE_DATA"
-					stype="INSERT INTO"
-					seq=35
-					instType="db"
-					objDir="sql"
-				elseif instr(strline,"UPDATE")>0  then					
-					otype="TABLE_DATA"
-					stype="UPDATE"
-					seq=35
-					instType="db"
-					objDir="sql"
-				elseif instr(strline,"DELETE FROM")>0 then					
-					otype="TABLE_DATA"
-					stype="DELETE FROM"
-					seq=35
-					instType="db"
-					objDir="sql"
-				elseif instr(strline,"CREATE OR REPLACE PACKAGE BODY")>0 then
-					otype="PACKAGE_BODY"
-					stype="CREATE OR REPLACE PACKAGE BODY"
-					seq=60
-					instType="db"
-					objDir="package"
-				elseif instr(strline,"CREATE OR REPLACE PACKAGE")>0 then
-					otype="PACKAGE_SPEC"
-					stype="CREATE OR REPLACE PACKAGE"
-					seq=40
-					instType="db"
-					objDir="package"
-				elseif instr(strline,"CREATE OR REPLACE VIEW")>0 then
-					otype="VIEW"
-					stype="CREATE OR REPLACE VIEW"
-					seq=50
-					instType="db"
-					objDir="view"
-				elseif instr(strline,"CREATE OR REPLACE FORCE VIEW")>0 then
-					otype="VIEW"
-					stype="CREATE OR REPLACE FORCE VIEW"	
-					seq=50
-					instType="db"
-					objDir="view"
-				elseif instr(strline,"CREATE OR REPLACE TRIGGER")>0 then
-					otype="TRIGGER"
-					stype="CREATE OR REPLACE TRIGGER"
-					seq=70
-					instType="db"
-					objDir="trigger"
+
+    for each key in langcfg 
+    	set lang=langcfg(key)
+	    if instr(fpath,"\" & lang("code") & "\")>0 then
+	    	olang=lang("code")
+	    end if
+  	next
+  	
+  	if extcfg.exists(sext) then
+  		
+  		set cfg=extcfg(sext)
+  		ctype=cfg("type")
+  		if cfg.exists("keys") then
+  			strline=""
+  			keyval=""
+  			set filekeys=cfg("keys")
+			Set f = fso.OpenTextFile(fpath, 1,true,0)
+			Do Until f.AtEndOfStream
+				strline=replace(Ucase(trim(f.ReadLine)),"""","")
+				if strline<>"" then
+					'Msgbox "strline:" & strline
+					if ctype="sql" then
+						for each idx in filekeys
+							set filekey=filekeys(idx)
+							set keya=filekey("keya")
+							for each i in keya 
+								keyval=keya(i)
+								keylen=len(keyval)
+		  						'Msgbox "for keya=>type:" & filekey("type") & chr(10) & "key:" & keyval & chr(10) & "left:" & keylen & "," & left(strline,keylen) & chr(10) 
+								if left(strline,keylen)=keyval then
+									otype=filekey("type")
+									oarr=split(trim(replace(strline,keyval,"")) ," ")
+									oname=oarr(0)
+									exit do
+								end if
+							next
+						next	
+				 	elseif ctype="fndload" then
+			  			if olang="" and instr(strline,filekeys(0))> 0 then				
+							oa=split(strline," ")
+							olang=oa(2)
+						elseif otype="" and instr(strline,filekeys(1))>0 then
+							oa=split(strline," ")
+							otype=oa(1)
+						elseif otype<>"" and instr(strline,filekeys(2) & " " & otype) then
+							oa=split(strline," ")
+							oname=oa(2)
+							if UBound(oa)>=3 then
+								app=oa(3)
+							end if 
+							exit do
+						end if
+					end if
+				end if
+			loop
+			f.close
+		else
+			otype=ctype
+  			oname=Ucase(sbase)
+  		end if
+  		
+    	'Msgbox fpath & chr(10)  & "=>type:" & otype & ",name:" & oname & ",app:" & app & ",lang:" & olang
+    	if otype<>"" then
+	    	if ctype="sql" or ctype="fndload" then
+	    		set typeobj=definecfg(ctype)(otype)
+	    		if ctype="fndload" then
+	    			otype=typeobj("key")
+	    		end if
+	    	else
+	    		set typeobj=definecfg("file")(otype)
+	    	end if
+	    	
+	    	if typeobj.exists("app_pre") then
+				if typeobj("app_pre")="Y" then
+					oname=oname & "." & app
 				else
-					otype="DB_TEMP"
-					seq=75
-					instType="db"
-					objDir="sql"
+					oname=app & "." & oname
 				end if
-				if otype<>"" and otype<>"DB_TEMP" then
-					oarr=split(trim(replace(strline,stype,"")) ," ")
-					oname=oarr(0)
-					exit do
+			end if
+	    	
+	    	objdir=typeobj("dir")
+    		seq=typeobj("seq")
+			instType=cfg("inst")
+				
+			if oname<>"" and instr(oname,".")=0 then
+				oname="CUX." & oname
+			end if
+			
+			if cfg.exists("pathkey")  then
+				if instr(path,"\" & cfg("pathkey") & "\")>0 then
+					objDir=mid(path,instr(path,"\" & cfg("pathkey") & "\")+1)
 				end if
-			elseif sext="ldt" then
-				if olang="" and instr(strline,"LANGUAGE =")> 0 then				
-					oa=split(strline," ")
-					olang=oa(2)
-				elseif otype="" and instr(strline,"DEFINE ")>0 then
-					oa=split(strline," ")
-					otype=oa(1)
-					
-					seq=80
-					instType="db"
-				elseif otype<>"" and instr(strline,"BEGIN "&otype) then
-					oa=split(strline," ")
-					oname=oa(2)
-					if UBound(oa)>=3 then
-						oname=oa(3) & "." &oname
-					end if 
-					if otype="PROGRAM" then
-						otype="REQUEST"
-					elseif otype="FND_LOOKUP_TYPE" then
-						otype="LOOKUP"
-					elseif otype="DESC_FLEX" then
-						otype="DESCFLEX"
-					elseif otype="KEY_FLEX" then
-						otype="KEYFLEX"
-					elseif otype="REQUEST_GROUP" then
-						otype="REQUESTGROUP"
-					elseif otype="REQ_SET" then
-						otype="REQUESTSET"
-					elseif otype="VALUE_SET" then
-						otype="VALUESET"
-					elseif otype="XDO_DS_DEFINITIONS" then
-						otype="XDO_DATADEFINE"
-					elseif otype="FND_RESPONSIBILITY" then
-						otype="RESPONSIBILITY"
-					elseif otype="FND_FORM_CUSTOM_RULES" then
-						otype="CUSTOMRULE"
-					elseif otype="FND_NEW_MESSAGES" then
-						otype="MESSAGE"
-					elseif otype="FND_APPLICATION" then
-						otype="FND_APP"
-					end if
-					objDir="fndload\" & lcase(otype)
-					exit do
-				end if
-			elseif sext="wft" then
-				if instr(strline,"BEGIN ITEM_TYPE ")>0 then
-					oa=split(strline," ")
-					otype="WORKFLOW"
-					oname="CUX." & oa(2)
-					seq=90
-					instType="db"
-					objDir=lcase(otype)
-					if olang="" then
-						olang="ZHS"
-					end if
-					exit do
-				end if
-			end if		
-		loop 
-		f.close
-	end if
-	
-	
+			end if
+				
+  			if cfg.exists("multilang") and cfg("multilang")="Y" then
+  				if olang="" then
+  					olang=deflang
+  				end if
+  			else
+  				olang=""
+  			end if
+    	end if
+  
+  	end if
+    'Msgbox fpath & chr(10) & "result=>type:" & otype & ",seq:" & seq & ",name:" & oname & ",lang:" & olang & ",inst:" & instType & ",dir:" & objdir
+    'Wscript.quit
 	getObjType=otype
 end function
 
@@ -262,6 +191,10 @@ Function dirobj(fso, ByVal sPath,eventNo,eventName)
     On Error Resume Next
     Set currentFolder = fso.GetFolder(sPath)
     On Error Goto 0
+    
+    if eventNo=0 then
+    	getTypeCfg(fso)
+    end if
     
     If Not (currentFolder is Nothing) Then  	
 		eventID=0
@@ -310,6 +243,7 @@ Function dirobj(fso, ByVal sPath,eventNo,eventName)
     dirobj = rt
 End Function
 
+
 function procFiles(fso,srcpath,destPath)
     
 	filecnt=dirObj(fso,srcpath,0,"")
@@ -328,6 +262,7 @@ function procFiles(fso,srcpath,destPath)
 				    'if fso.fileexists(destFile) then
 				    '	clearFileAttr fso,destFile,1
 				    'end if			    
+				    'Msgbox destfile
 				  	cpFile fso,obj("path"),destFile
 			  	end if		  	
 	    	next

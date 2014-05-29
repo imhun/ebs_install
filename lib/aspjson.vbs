@@ -228,11 +228,11 @@ Class aspJSON
 		val = Replace(val, "\""", """")
 		val = Replace(val, "\\", "\")
 		val = Replace(val, "\/", "/")
-		val = Replace(val, "\b", Chr(8))
-		val = Replace(val, "\f", Chr(12))
-		val = Replace(val, "\n", Chr(10))
-		val = Replace(val, "\r", Chr(13))
-		val = Replace(val, "\t", Chr(9))
+		'val = Replace(val, "\b", Chr(8))
+		'val = Replace(val, "\f", Chr(12))
+		'val = Replace(val, "\n", Chr(10))
+		'val = Replace(val, "\r", Chr(13))
+		'val = Replace(val, "\t", Chr(9))
 		aj_JSONDecode = Trim(val)
 	End Function
 
