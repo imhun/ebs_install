@@ -402,7 +402,12 @@ sub readConfigFile {
   	errorAndExit("Config file error: basepath must be setup.\n");
   }
   
+   if(!defined($cfg{'stagepath'}) || $cfg{'stagepath'} eq ""){
+  	errorAndExit("Config file error: stagepath must be setup.\n");
+  }
+  
   # set dbschema from config file
+  
   $arg{'dbschema'} = $cfg{'dbschema'};
   # set install base path
   $basepath = $ENV{$cfg{'basepath'}};
@@ -490,19 +495,8 @@ sub validateStepConfig
   $_stepConfig{'multilanguage'}="N" if(!defined($_stepConfig{'multilanguage'}));
   errorAndExit("Config error: $currentStep.sourcedir is invalid.[Y\/N]\n") unless($_stepConfig{'multilanguage'} eq "N" || $_stepConfig{'multilanguage'} eq "Y");
   
-  $_stepConfig{'copytostage'}="N" if(!defined($_stepConfig{'copytostage'}));
-  errorAndExit("Config error: $currentStep.copytostage is invalid.[Y\/N]\n") unless($_stepConfig{'copytostage'} eq "N" || $_stepConfig{'copytostage'} eq "Y");
-
   $_stepConfig{'copytodestination'}="N" if(!defined($_stepConfig{'copytodestination'}));
   errorAndExit("Config error: $currentStep.copytodestination is invalid.[Y\/N]\n") unless($_stepConfig{'copytodestination'} eq "N" || $_stepConfig{'copytodestination'} eq "Y");
-  
-  if($_stepConfig{'copytostage'} eq "Y"){
-  	if(!defined($_stepConfig{'stagedir'}) || $_stepConfig{'stagedir'} eq ""){
-  	  errorAndExit("Config error: $currentStep.stagedir not defined.\n");
-    }
-  }else{
-  	$_stepConfig{'stagedir'} = "";
-  }
   
   if($_stepConfig{'copytodestination'} eq "Y"){
   	if(!defined($_stepConfig{'destinationdir'}) || $_stepConfig{'destinationdir'} eq ""){
@@ -561,10 +555,8 @@ sub processInstallStep
 	my $sourceFiledir = getOSfilepath($arg{'installpath'}."/".$_stepConfig{'sourcedir'});
 	my $oldNlsLang = "";
 
-	# check whether copy to stage
-	if($_stepConfig{'copytostage'} eq "Y"){
-		copySourceToStage();
-	}
+	#copy to stage
+	copySourceToStage();
 
 	# check whether copy to destination
 	if($_stepConfig{'copytodestination'} eq "Y"){
@@ -1086,8 +1078,8 @@ sub copySourceToStage
 	my $sourceFiledirLang;
 	my $stageFiledirLang;
 	my $sourceFiledir = getOSfilepath($arg{'installpath'}."/".$_stepConfig{'sourcedir'});
-	my $stageFiledir = eval("\"".$_stepConfig{'stagedir'}."\"");
-	errorAndExit("eval error : ".$@."\n",1) if ($@);
+	my $stageFiledir = eval("\"".$cfg{'stagepath'}."/".$_stepConfig{'sourcedir'}."\"");
+	errorAndExit("eval error : ".$@."\n",1) if ($@); 
 	
 	$stageFiledir = getOSfilepath($stageFiledir);
 	printLogAndOut("begin copy source file to stage: $stageFiledir\n",1);

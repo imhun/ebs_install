@@ -39,6 +39,7 @@ Sub dotest
 		'包含文件处理库
 		include "..\lib\lib.vbs"
 		include "..\lib\lib_install.vbs"
+		include "..\lib\aspjson.vbs"
 
     	currDir= GetCurrentFolderFullPath(fso,Wscript.ScriptFullName) 	
     	currPDir=fso.GetParentFolderName(currDir)
