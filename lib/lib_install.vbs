@@ -35,7 +35,7 @@ Function getObjType(fso,fobj,byref okey,byref oname,byref olang,byref seq,byref 
 	sbase = ""
 	otype=""
 	okey=""
-	app=""
+	owner=""
 	oname=""
 	olang=""
 	seq=""
@@ -55,7 +55,8 @@ Function getObjType(fso,fobj,byref okey,byref oname,byref olang,byref seq,byref 
   	if extcfg.exists(sext) then
   		
   		set cfg=extcfg(sext)
-  		ctype=cfg("type")
+  		sdefine=cfg("define")
+  		keytype=cfg("keytype")
   		if cfg.exists("keys") then
   			strline=""
   			keyval=""
@@ -65,7 +66,7 @@ Function getObjType(fso,fobj,byref okey,byref oname,byref olang,byref seq,byref 
 				strline=replace(Ucase(trim(f.ReadLine)),"""","")
 				if strline<>"" then
 					'Msgbox "strline:" & strline
-					if ctype="sql" then
+					if keytype="sql" then
 						for each idx in filekeys
 							set filekey=filekeys(idx)
 							set keya=filekey("keya")
@@ -81,45 +82,59 @@ Function getObjType(fso,fobj,byref okey,byref oname,byref olang,byref seq,byref 
 								end if
 							next
 						next	
-				 	elseif ctype="fndload" then
+				 	elseif keytype="fndload" then
 			  			if olang="" and instr(strline,filekeys(0))> 0 then				
 							oa=split(strline," ")
 							olang=oa(2)
 						elseif otype="" and instr(strline,filekeys(1))>0 then
 							oa=split(strline," ")
 							otype=oa(1)
-						elseif otype<>"" and instr(strline,filekeys(2) & " " & otype) then
+						elseif otype<>"" and instr(strline,filekeys(2) & " " & otype)>0 then
 							oa=split(strline," ")
 							oname=oa(2)
 							if UBound(oa)>=3 then
-								app=oa(3)
+								owner=oa(3)
 							end if 
 							exit do
 						end if
+				 	elseif keytype="xdf" then
+				 		
+						if owner="next_line" then
+							owner=strline
+						elseif oname="next_line" then
+							oname=strline
+						elseif otype="next_line" then
+							otype=strline
+							oname=owner & "." & oname
+							exit do
+						end if
+						
+			  			if owner="" and instr(strline,Ucase(filekeys(0)))> 0 then				
+							owner="next_line"
+						elseif oname="" and instr(strline,Ucase(filekeys(1)))>0 then
+							oname="next_line"
+						elseif otype="" and instr(strline,Ucase(filekeys(2)))>0 then
+							otype="next_line"
+						end if
+						
 					end if
 				end if
 			loop
 			f.close
 		else
-			otype=ctype
+			otype=keytype
   			oname=Ucase(sbase)
   		end if
   		
-    	'Msgbox fpath & chr(10)  & "=>type:" & otype & ",name:" & oname & ",app:" & app & ",lang:" & olang
+    	'Msgbox fpath & chr(10)  & "=>type:" & otype & ",name:" & oname & ",owner:" & owner & ",lang:" & olang
     	if otype<>"" then
-	    	if ctype="sql" or ctype="fndload" then
-	    		set typeobj=definecfg(ctype)(otype)
-	    	else
-	    		set typeobj=definecfg("file")(otype)
-	    	end if
-	    	
-	    	
+	    	set typeobj=definecfg(sdefine)(otype)
 	    	
 	    	if typeobj.exists("app_pre") then
 				if typeobj("app_pre")="Y" then
-					oname=oname & "." & app
+					oname=oname & "." & owner
 				else
-					oname=app & "." & oname
+					oname=owner & "." & oname
 				end if
 			end if
 			

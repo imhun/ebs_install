@@ -64,7 +64,7 @@ Sub dotest
 		
 		Set filedata = Collection()
     	filecnt=procFiles(fso,srcPath,currDir)
-    	'Wscript.quit
+    	Wscript.quit
     	appexist=0
     	dbexist=0
     	
