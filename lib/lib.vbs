@@ -99,6 +99,26 @@ Function cmdproc(cmdstr,logfile,isecho,prompt)
 	cmdproc=res
 end function
 
+sub exec(cmdstr)
+	Set fso = CreateObject("Scripting.FileSystemObject")  
+	set ws=createobject("wscript.shell")
+	currDir= GetCurrentFolderFullPath(fso,Wscript.ScriptFullName) 
+	cmdfile=currDir&"\cmd.bat"
+	Set fcmd = fso.opentextfile(cmdfile, 2, True)
+	fcmd.writeline "@ECHO OFF"
+	fcmd.write replace(cmdstr,"&&",vbcrlf) & vbcrlf
+	fcmd.writeline "echo press any key to quit"
+	fcmd.writeline "pause >nul"
+	fcmd.close
+	ret=ws.run(cmdfile,1,true)
+	
+	fso.deletefile cmdfile
+	
+	set fcmd=Nothing
+	set fso=Nothing
+	set ws=Nothing
+end sub
+
 Function getShType(ws,spt)
 	set oexec=ws.exec(spt)
   	rshtype=replace(replace(oexec.StdOut.Readall,chr(10),""),chr(13),"")

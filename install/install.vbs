@@ -161,11 +161,12 @@ Sub dotest
 		        'Wscript.echo(sshupf)
 		        'Msgbox (sshinst)
 		        'Wscript.echo(sshdwf)
-		    	spt=cmds&cmdproc(sshupf&sshinst&sshdwf,"",1,prompt)
+		    	spt=cmdproc(sshupf&sshinst&sshdwf,"",1,prompt)
 		   
 		    	'Wscript.Echo(replace(spt,"&&",vbcrlf))
 		    	'Wscript.quit
-		    	ret=ws.run(spt,1,true) '执行下载命令
+		    	'ret=ws.run(spt,1,true) '执行下载命令
+		    	exec spt
 		    	
 		    	instres=getResult(fso,currdir&"\"&prefixhost&"_install.log")		
 		    else
