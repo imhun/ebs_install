@@ -83,7 +83,8 @@ Sub dotest
 				oa=split(objline,"|")
 				otype=oa(0)
 				if otype="TABLE" or otype="VIEW" or otype="SYNONYM" _
-					or otype="SEQUENCE" or otype="PACKAGE_SPEC" or otype="PACKAGE_BODY"_
+					or otype="SEQUENCE" or otype="PACKAGE" or otype="PACKAGE BODY"_
+					or otype="TYPE" or otype="TYPE BODY" or otype="JAVA SOURCE"_
 					or otype="PROCEDURE" or otype="FUNCTION"  or otype="TRIGGER" or otype="MATERIALIZED_VIEW" then
 					fdblist.writeline objline
 					dbcnt=dbcnt+1
@@ -187,7 +188,7 @@ Sub dotest
         end if
         
         Set fso=Nothing
-        Msgbox Date&" "&Time&",下载文件数:"&filecnt
+        Msgbox Date&" " & Time & ",下载文件数:" & filecnt
         
 End Sub
 

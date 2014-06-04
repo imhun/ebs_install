@@ -128,6 +128,18 @@ then
         ECHO_ERROR_LOG "ERROR: 执行失败，数据库自动回滚"
     fi
     return 2
+else
+    unknown_cnt=`grep "unknown command" ${tmpfile}|wc -l`
+    if [ $unknown_cnt -ne 0 ]
+    then
+        ECHO_ERROR_LOG "WARNING: 存在unknown command"
+
+        warn_cnt=`grep ^"0 rows " ${tmpfile}|wc -l`
+        if [ $warn_cnt -ne 0 ]
+        then
+            ECHO_ERROR_LOG "WARNING: 执行结果存在 0 rows"
+        fi
+    fi
 fi
 
 rm ${exesqlfile}

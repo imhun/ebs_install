@@ -8,7 +8,7 @@ then
     echo "    database: 数据库名"
     echo "    dbuser:   数据库用户名"
     echo "    dbpasswd: 数据库密码"
-    echo "    job_tp:   ORA_SQL_TMP|ORA_TABLE_ONLY|ORA_VIEW|ORA_PROCEDURE|ORA_FUNCTION|ORA_PACKAGE_SPEC|ORA_PACKAGE_BODY|ORA_SEQUENCE|ORA_SYNONYM|ORA_TRIGGER|ORA_MATERIALIZED_VIEW"
+    echo "    job_tp:   ORA_SQL_TMP|ORA_TABLE_ONLY|ORA_VIEW|ORA_PROCEDURE|ORA_FUNCTION|ORA_PACKAGE_SPEC|ORA_PACKAGE_BODY|ORA_SEQUENCE|ORA_SYNONYM|ORA_TRIGGER|ORA_MATERIALIZED_VIEW|ORA_TYPE_SPEC|ORA_TYPE_BODY|ORA_JAVA_SOURCE"
     echo "    params:   schema.objname"
     echo ""
     exit 1
@@ -130,7 +130,7 @@ EOF
 
 res=0
 case $job_tp in
-ORA_SQL_TMP|ORA_TABLE_ONLY|ORA_VIEW|ORA_PROCEDURE|ORA_FUNCTION|ORA_PACKAGE_SPEC|ORA_PACKAGE_BODY|ORA_SEQUENCE|ORA_SYNONYM|ORA_TRIGGER|ORA_MATERIALIZED_VIEW)
+ORA_SQL_TMP|ORA_TABLE_ONLY|ORA_VIEW|ORA_PROCEDURE|ORA_FUNCTION|ORA_PACKAGE_SPEC|ORA_PACKAGE_BODY|ORA_SEQUENCE|ORA_SYNONYM|ORA_TRIGGER|ORA_MATERIALIZED_VIEW|ORA_TYPE_SPEC|ORA_TYPE_BODY|ORA_JAVA_SOURCE)
     LOGIN_STR="${dbuser}/${dbpasswd}@${database}"
     ORACLE_USR=`echo ${dbuser}|tr [a-z] [A-Z]`
     schema=`echo ${params}|awk -F'.' '{print $1}'|tr [a-z] [A-Z]`
@@ -289,22 +289,31 @@ ORA_SQL_TMP|ORA_TABLE_ONLY|ORA_VIEW|ORA_PROCEDURE|ORA_FUNCTION|ORA_PACKAGE_SPEC|
         fi
     
         SpoolSqlFileHead ${exesqlfile} ${file_nm} off N
-        if [ "${job_tp}" = "ORA_PACKAGE_SPEC" ]
+        if [ "${job_tp}" = "ORA_PACKAGE_SPEC" -o "${job_tp}" = "ORA_TYPE_SPEC" ]
         then
-            ECHO_SCREEN_LOG "echo \"select DBMS_METADATA.get_ddl('${SPOOL_TYPE}',object_name,OWNER) c1 from dba_objects where OWNER='${schema}' and OBJECT_TYPE='PACKAGE' and OBJECT_NAME='$objname';\" >>${exesqlfile}"
-            echo "select DBMS_METADATA.get_ddl('${SPOOL_TYPE}',object_name,OWNER) c1 from dba_objects where OWNER='${schema}' and OBJECT_TYPE='PACKAGE' and OBJECT_NAME='$objname';" >>${exesqlfile}
-        elif [ "${job_tp}" = "ORA_PACKAGE_BODY" ]
+            objtype=`echo "${SPOOL_TYPE}"|sed 's/_SPEC//g'`
+        elif [ "${job_tp}" = "ORA_PACKAGE_BODY" -o "${job_tp}" = "ORA_TYPE_BODY" -o "${job_tp}" = "ORA_MATERIALIZED_VIEW" -o "${job_tp}" = "ORA_JAVA_SOURCE" ]
         then
-            ECHO_SCREEN_LOG "echo \"select DBMS_METADATA.get_ddl('${SPOOL_TYPE}',object_name,OWNER) c1 from dba_objects where OWNER='${schema}' and OBJECT_TYPE='PACKAGE BODY' and OBJECT_NAME='$objname';\" >>${exesqlfile}"
-            echo "select DBMS_METADATA.get_ddl('${SPOOL_TYPE}',object_name,OWNER) c1 from dba_objects where OWNER='${schema}' and OBJECT_TYPE='PACKAGE BODY' and OBJECT_NAME='$objname';" >>${exesqlfile}
-        elif [ "${job_tp}" = "ORA_MATERIALIZED_VIEW" ]
-        then
-            ECHO_SCREEN_LOG "echo \"select DBMS_METADATA.get_ddl('${SPOOL_TYPE}',object_name,OWNER) c1 from dba_objects where OWNER='${schema}' and OBJECT_TYPE='MATERIALIZED VIEW' and OBJECT_NAME='$objname';\" >>${exesqlfile}"
-            echo "select DBMS_METADATA.get_ddl('${SPOOL_TYPE}',object_name,OWNER) c1 from dba_objects where OWNER='${schema}' and OBJECT_TYPE='MATERIALIZED VIEW' and OBJECT_NAME='$objname';" >>${exesqlfile}
+            objtype=`echo "${SPOOL_TYPE}"|sed 's/_/ /g'`
         else
-            ECHO_SCREEN_LOG "echo \"select DBMS_METADATA.get_ddl(object_type,object_name,OWNER) c1 from dba_objects where OWNER='${schema}' and OBJECT_TYPE='${SPOOL_TYPE}' and OBJECT_NAME='$objname';\" >>${exesqlfile}"
-            echo "select DBMS_METADATA.get_ddl(object_type,object_name,OWNER) c1 from dba_objects where OWNER='${schema}' and OBJECT_TYPE='${SPOOL_TYPE}' and OBJECT_NAME='$objname';" >>${exesqlfile}
+            objtype="${SPOOL_TYPE}"
         fi
+
+        if [ "${job_tp}" = "ORA_JAVA_SOURCE" ]
+        then
+            #DBMS_METADATA.get_ddl获取的JAVA SOURCE格式混乱,改为通过dba_source获取
+            ECHO_SCREEN_LOG "echo \"select 'CREATE OR REPLACE AND COMPILE ${objtype} NAMED ${schema}.${objname} AS' from dual union all select TEXT from (select TEXT from dba_source where TYPE='${objtype}' and OWNER='${schema}' and NAME='${objname}' order by LINE) union all select '/' from dual;\" >>${exesqlfile}"
+            echo "select 'CREATE OR REPLACE AND COMPILE ${objtype} NAMED ${schema}.${objname} AS' from dual union all select TEXT from (select TEXT from dba_source where TYPE='${objtype}' and OWNER='${schema}' and NAME='${objname}' order by LINE) union all select '/' from dual;" >>${exesqlfile}
+        elif [ "${job_tp}" = "ORA_TYPE_BODY" ]
+        then
+            #若自定义数据类型头不存在时,DBMS_METADATA.get_ddl会报错,改为通过dba_source获取
+            ECHO_SCREEN_LOG "echo \"select 'CREATE OR REPLACE '||TEXT from dba_source where TYPE='${objtype}' and OWNER='${schema}' and NAME='${objname}' and LINE=1 union all select TEXT from (select TEXT from dba_source where TYPE='${objtype}' and OWNER='${schema}' and NAME='${objname}' and LINE>1 order by LINE) union all select '/' from dual;\" >>${exesqlfile}"
+            echo "select 'CREATE OR REPLACE '||TEXT from dba_source where TYPE='${objtype}' and OWNER='${schema}' and NAME='${objname}' and LINE=1 union all select TEXT from (select TEXT from dba_source where TYPE='${objtype}' and OWNER='${schema}' and NAME='${objname}' and LINE>1 order by LINE) union all select '/' from dual;" >>${exesqlfile}
+        else
+            ECHO_SCREEN_LOG "echo \"select DBMS_METADATA.get_ddl('${SPOOL_TYPE}',object_name,OWNER) c1 from dba_objects where OWNER='${schema}' and OBJECT_TYPE='${objtype}' and OBJECT_NAME='$objname';\" >>${exesqlfile}"
+            echo "select DBMS_METADATA.get_ddl('${SPOOL_TYPE}',object_name,OWNER) c1 from dba_objects where OWNER='${schema}' and OBJECT_TYPE='${objtype}' and OBJECT_NAME='$objname';" >>${exesqlfile}
+        fi
+
         SpoolSqlFileEnd ${exesqlfile}
         ECHO_SCREEN_LOG "sqlplus -L -S ${dbuser}/******@${database} @${exesqlfile} >>${logfile} 2>&1"
         echo "------>" >>${logfile}
@@ -318,9 +327,11 @@ ORA_SQL_TMP|ORA_TABLE_ONLY|ORA_VIEW|ORA_PROCEDURE|ORA_FUNCTION|ORA_PACKAGE_SPEC|
             then
                 ECHO_ERROR_LOG "ERROR: sqlplus -L -S ${LOGIN_STR} @${exesqlfile}执行失败"
             else
-                #判断文件大小
+                #判断对象是否存在
+                #ORA_JAVA_SOURCE,ORA_TYPE_BODY 通过行数判断,其余通过文件大小判断
                 size=`cat "${file_nm}"|wc -c`
-                if [ $size -eq 0 ]
+                linecnt=`cat "${file_nm}"|wc -l`
+                if [ \( "${job_tp}" = "ORA_JAVA_SOURCE" -a $linecnt -eq 2 \) -o \( "${job_tp}" = "ORA_TYPE_BODY" -a $linecnt -eq 1 \) -o $size -eq 0 ]
                 then
                     ECHO_ERROR_LOG "ERROR: 对象不存在"
                     res=1
@@ -335,7 +346,7 @@ ORA_SQL_TMP|ORA_TABLE_ONLY|ORA_VIEW|ORA_PROCEDURE|ORA_FUNCTION|ORA_PACKAGE_SPEC|
                         #ORA_TRIGGER 通过最后是否以ABLE;结尾判断是否有被截断
                         check_flag=`sed 's/ //g' ${file_nm}|grep -v ^$|tail -1|grep 'ABLE;$'|wc -l`
                     else
-                        #ORA_FUNCTION,ORA_PACKAGE_SPEC,ORA_PACKAGE_BODY,ORA_PROCEDURE 通过最后是否以/结尾判断是否有被截断
+                        #ORA_FUNCTION,ORA_PACKAGE_SPEC,ORA_PACKAGE_BODY,ORA_PROCEDURE,ORA_TYPE_SPEC,ORA_TYPE_BODY,ORA_JAVA_SOURCE 通过最后是否以/结尾判断是否有被截断
                         check_flag=`sed 's/ //g' ${file_nm}|grep -v ^$|tail -1|grep '^/$'|wc -l`
                     fi
     

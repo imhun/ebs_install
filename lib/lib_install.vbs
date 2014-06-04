@@ -30,10 +30,11 @@ sub getTypeCfg(fso)
 	next
 end sub
 
-'»ñÈ¡°²×°ÎÄ¼şÀàĞÍ¼°ÆäËûÊôĞÔ
-Function getObjType(fso,fobj,byref oname,byref olang,byref seq,byref instType,byref objDir)
+'è·å–æ–‡ä»¶å±æ€§
+Function getObjType(fso,fobj,byref okey,byref oname,byref olang,byref seq,byref instType,byref objDir)
 	sbase = ""
 	otype=""
+	okey=""
 	app=""
 	oname=""
 	olang=""
@@ -108,12 +109,11 @@ Function getObjType(fso,fobj,byref oname,byref olang,byref seq,byref instType,by
     	if otype<>"" then
 	    	if ctype="sql" or ctype="fndload" then
 	    		set typeobj=definecfg(ctype)(otype)
-	    		if ctype="fndload" then
-	    			otype=typeobj("key")
-	    		end if
 	    	else
 	    		set typeobj=definecfg("file")(otype)
 	    	end if
+	    	
+	    	
 	    	
 	    	if typeobj.exists("app_pre") then
 				if typeobj("app_pre")="Y" then
@@ -122,6 +122,12 @@ Function getObjType(fso,fobj,byref oname,byref olang,byref seq,byref instType,by
 					oname=app & "." & oname
 				end if
 			end if
+			
+	    	if typeobj.exists("key") then
+	    		okey=typeobj("key")
+	    	else
+	    		okey=otype
+	    	end if
 	    	
 	    	objdir=typeobj("dir")
     		seq=typeobj("seq")
@@ -147,7 +153,7 @@ Function getObjType(fso,fobj,byref oname,byref olang,byref seq,byref instType,by
     	end if
   
   	end if
-    'Msgbox fpath & chr(10) & "result=>type:" & otype & ",seq:" & seq & ",name:" & oname & ",lang:" & olang & ",inst:" & instType & ",dir:" & objdir
+    'Msgbox fpath & chr(10) & "result=>type:" & otype & ",key:" & okey & ",seq:" & seq & ",name:" & oname & ",lang:" & olang & ",inst:" & instType & ",dir:" & objdir
     'Wscript.quit
 	getObjType=otype
 end function
@@ -155,10 +161,11 @@ end function
 Function fileobj(fso,fobj)
     otype=""
     sbase = ""
-    fext = GetFileExtAndBaseName(fobj.name, sbase)    ' À©Õ¹Ãû.
-	otype=getObjType(fso,fobj,oname,olang,seq,instType,objDir)
+    fext = GetFileExtAndBaseName(fobj.name, sbase)    ' Ã€Â©Ã•Â¹ÃƒÃ».
+	otype=getObjType(fso,fobj,okey,oname,olang,seq,instType,objDir)
 	set obj=Collection()
-	obj("key")= seq & "_" & otype
+	obj("key")= seq & "_" & okey
+	obj("typekey")= okey
 	obj("type")=otype
 	obj("name")=oname
 	obj("lang")=olang
@@ -177,12 +184,7 @@ Function fileobj(fso,fobj)
 	set fileobj=obj
 end function
 
-' ±éÀú¸ÃÄ¿Â¼¼°×ÓÄ¿Â¼.
-'
-' Result: Ä¿Â¼ºÍÎÄ¼şµÄ×ÜÊı.
-' fileOut: Êä³öÎÄ¼ş£¬ÓÃÓÚÊä³ö±éÀú½á¹û.
-' fso: FileSystemObject¶ÔÏó.
-' sPath: Ä¿Â¼.
+
 Function dirobj(fso, ByVal sPath,eventNo,eventName)
     rt = 0
     Set currentFolder = Nothing
@@ -220,7 +222,7 @@ Function dirobj(fso, ByVal sPath,eventNo,eventName)
        end if
         ' Files
        For Each f in currentFolder.Files            
-            sfull = f.Path    ' È«ÏŞ¶¨Ãû.
+            sfull = f.Path
             rt = rt + 1
             
             set obj= fileobj(fso,f)
@@ -245,7 +247,7 @@ End Function
 
 
 function procFiles(fso,srcpath,destPath)
-    
+	
 	filecnt=dirObj(fso,srcpath,0,"")
 	filecnt=0
 	for each row in filedata
@@ -260,7 +262,7 @@ function procFiles(fso,srcpath,destPath)
 				    relateDir=  obj("objDir") & obj("langDir")  &  obj("fname")  	
 				    destFile=destPath & "\code\" & obj("instType") & "\" & relateDir
 				    'if fso.fileexists(destFile) then
-				    '	clearFileAttr fso,destFile,1
+				    '	setFileAttr fso,destFile,32
 				    'end if			    
 				    'Msgbox destfile
 				  	cpFile fso,obj("path"),destFile

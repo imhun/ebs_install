@@ -30,7 +30,6 @@ end function
 Sub dotest
 		'运行参数
 		'Set args = WScript.Arguments
-		
 		Set fso = CreateObject("Scripting.FileSystemObject")  
 	
 		'包含文件处理库

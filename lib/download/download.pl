@@ -535,7 +535,7 @@ sub readConfigFile {
       $line =~ s/\s*$//;     # Remove spaces at the end of the line
       if ( ($line !~ /^#/) && ($line ne "") )
       { # Ignore lines starting with # and blank lines
-        ($key, $value) = split (/ /, $line);          # Split each line into name value pairs
+        ($key, $value) = split (/:/, $line);          # Split each line into name value pairs
         $key =~ s/^\s*//;
         $key =~ s/\s*$//;
         $value =~ s/^\s*//;
@@ -720,7 +720,7 @@ sub getSqlScript
 		$sqlScript .= "SELECT TEXT\n";
 		$sqlScript .= "FROM user_source\n";
 		$sqlScript .= "WHERE name='$object_name'\n";
-		$sqlScript .= "and type=decode('$object_type','PACKAGE_SPEC','PACKAGE','PACKAGE_BODY','PACKAGE BODY','JAVA_SOURCE','JAVA SOURCE','TYPE_SPEC','TYPE','TYPE_BODY','TYPE BODY','$object_type')\n";
+		$sqlScript .= "and type='$object_type'\n";
 		$sqlScript .= "ORDER BY LINE;\n";
 		
 		$sqlScript .= "SPOOL OFF\n";
@@ -799,6 +799,9 @@ sub validateTypeConfig
   if(!defined($_typeConfig{'destdir'}) || $_typeConfig{'destdir'} eq ""){
   	errorAndExit("Config error: $currentType.destdir not defined.\n");
   }
+  
+  $_typeConfig{'multilanguage'}="N" if(!defined($_typeConfig{'multilanguage'}));
+  errorAndExit("Config error: $currentType.sourcedir is invalid.[Y\/N]\n") unless($_typeConfig{'multilanguage'} eq "N" || $_typeConfig{'multilanguage'} eq "Y");
   
 }
 

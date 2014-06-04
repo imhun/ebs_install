@@ -10,8 +10,10 @@ then
     echo "    dbpasswd:  数据库密码"
     echo "    -s schema: 获取指定schema下所有对象"
     echo "    -f file_list: 获取列表文件所列对象(内容格式：类型|对象)"
-    echo "        类型: T-表，V-视图，P-存储过程，F-函数，PH-包头，PB-包体，SEQ-序列，SYN-同义词，TRG-触发器，M-物化视图"
-    echo "        对象: 表、视图、存储过程、函数、包头、包体、序列、同义词、触发器、物化视图"
+    echo "        类型: T-表，V-视图，P-存储过程，F-函数，PH-包头，PB-包体，SEQ-序列，SYN-同义词，TRG-触发器"
+    echo "              M-物化视图，TH-自定义类型头，TB-自定义类型体，JS-JAVA SOURCE"
+    echo "        对象: 表、视图、存储过程、函数、包头、包体、序列、同义词、触发器"
+    echo "              物化视图、自定义类型头、自定义类型体、JAVA SOURCE"
     echo "          如：T|DWMM.JOB_METADATA"
     echo ""
     exit 1
@@ -163,15 +165,24 @@ do
     if [ "$type" = "TABLE" ]
     then
         type="ORA_SQL_TMP"
-    elif [ "$type" = "PACKAGE_SPEC" ]
+    elif [ "$type" = "PACKAGE" ]
     then
         type="ORA_PACKAGE_SPEC"
-    elif [ "$type" = "PACKAGE_BODY" ]
+    elif [ "$type" = "PACKAGE BODY" ]
     then
         type="ORA_PACKAGE_BODY"
-    elif [ "$type" = "MATERIALIZED_VIEW" ]
+    elif [ "$type" = "MATERIALIZED VIEW" ]
     then
         type="ORA_MATERIALIZED_VIEW"
+    elif [ "$type" = "TYPE" ]
+    then
+        type="ORA_TYPE_SPEC"
+    elif [ "$type" = "TYPE BODY" ]
+    then
+        type="ORA_TYPE_BODY"
+    elif [ "$type" = "JAVA SOURCE" ]
+    then
+        type="ORA_JAVA_SOURCE"
     else
         type="ORA_${type}"
     fi
