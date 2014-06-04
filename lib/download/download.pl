@@ -707,7 +707,7 @@ sub getSqlScript
     
 	  $sqlScript .= "SPOOL OFF\n";
 	  $sqlScript .= "EXIT;\n";	  
-	}elsif($option eq "DOWNLOAD_PACKAGE"){
+	}elsif($option eq "DOWNLOAD_SOURCE"){
 		$sqlScript .= "SET VERIFY OFF;\n";
 		$sqlScript .= "SET TERM OFF;\n";
 		$sqlScript .= "SET HEAD OFF;\n";
@@ -1032,7 +1032,7 @@ sub getPlsqlObjects
 		
     $objectFile = getOSfilepath($currentDir."/".$object.".".$_typeConfig{'extname'}) ;
 		
-		$getObjectSql = getSqlScript("DOWNLOAD_PACKAGE", $sqlSpoolFile , $object , $currentType );
+		$getObjectSql = getSqlScript("DOWNLOAD_SOURCE", $sqlSpoolFile , $object , $currentType );
 		
 		unlink $sqlSpoolFile if(-f $sqlSpoolFile);
 		

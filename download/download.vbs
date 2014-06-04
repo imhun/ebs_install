@@ -85,7 +85,7 @@ Sub dotest
 				if otype="TABLE" or otype="VIEW" or otype="SYNONYM" _
 					or otype="SEQUENCE" or otype="PACKAGE" or otype="PACKAGE BODY"_
 					or otype="TYPE" or otype="TYPE BODY" or otype="JAVA SOURCE"_
-					or otype="PROCEDURE" or otype="FUNCTION"  or otype="TRIGGER" or otype="MATERIALIZED_VIEW" then
+					or otype="PROCEDURE" or otype="FUNCTION"  or otype="TRIGGER" or otype="MATERIALIZED VIEW" then
 					fdblist.writeline objline
 					dbcnt=dbcnt+1
 			  	elseif otype<>"" then
