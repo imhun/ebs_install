@@ -15,31 +15,30 @@ End Sub
 Sub dotest
 
 		Set fso = CreateObject("Scripting.FileSystemObject")  
-		Set f = fso.OpenTextFile("download_conn.cfg", 1)
-		strJson = f.ReadAll
-		f.Close
-		Set f=Nothing
-	
-		'获取连接设置
-		Set html = CreateObject("htmlfile")
-    	Set window = html.parentWindow
-   		window.execScript "var json = "&strJson&"", "JScript"
-		Set cfg = window.json
-    	rhost=cfg.app.host
-    	ruser=cfg.app.user
-    	rpw=cfg.app.pwd
-    	dbsid=cfg.db.sid
-    	dbuser=cfg.db.user
-    	dbpw=cfg.db.pwd
-    	cuxpw=cfg.db.cuxpwd
-    	nlslang=cfg.db.nls_lang
-    	list=cfg.listfile
-    	dbtype=cfg.dbtype
+		
     	
 		'包含文件处理库
 		include "..\lib\lib.vbs"
 		include "..\lib\lib_install.vbs"
 		include "..\lib\aspjson.vbs"
+		
+		
+		'获取连接设置,读取json配置文件
+		set data=readConfig(fso,"download_conn.cfg")
+		set appcfg=data("app")
+		set dbcfg=data("db")
+    	rhost=appcfg("host")
+    	ruser=appcfg("user")
+    	rpw=appcfg("pwd")
+    	dbsid=dbcfg("sid")
+    	dbuser=dbcfg("user")
+    	dbpw=dbcfg("pwd")
+    	if dbcfg.exists("cuxpwd") then
+    		cuxpw=dbcfg("cuxpwd")
+    	end if
+    	nlslang=dbcfg("nls_lang")
+    	list=data("listfile")
+    	dbtype=data("dbtype")
 
     	currDir= GetCurrentFolderFullPath(fso,Wscript.ScriptFullName) 	
     	currPDir=fso.GetParentFolderName(currDir)
@@ -123,9 +122,9 @@ Sub dotest
     	listfile=""
     	fmfile="perl -pi -e 's/^\xEF\xBB\xBF|\xFF\xFE//' [file]; perl -pi -e 's/\r\n/\n/' [file];" '列表文件格式化，去除UTF-8的BOM头，windows换行符\r\n转换为unix换行符\n\
 
-		renv="NLS_LANG='"&nlslang&"';export NLS_LANG;./setenv.sh;. "&rprof&";" '环境变量
+		renv="NLS_LANG='"&nlslang&"';export NLS_LANG;. ./setenv.sh;. "&rprof&";" '环境变量
     	
-    	sshpre="cd $HOME/"&rtdir&"; chmod +x ./*;"&renv&"echo ""NLS_LANG=$NLS_LANG"";"
+    	sshpre="cd $HOME/"&rtdir&"; chmod +x ./*;"&renv&"echo ""NLS_LANG=$NLS_LANG"";echo ""ORACLE_HOME=$ORACLE_HOME"";"
     	
     	sshupf=" echo ==)begin get ddl process: && echo ==)uploading script file to server...... "&_
     			  " && "&sshm&" rm -rf ~/"&rtdir&"; mkdir ~/"&rtdir&";"""&_ 
@@ -162,7 +161,7 @@ Sub dotest
 		'Wscript.echo(sshappd)
 		'Wscript.echo(sshdwf)
 		  
-		spt=sshupf&sshdbd&sshappd&sshdwf
+		spt=sshupf & sshdbd & sshappd & sshdwf
     	
 		'Wscript.Echo(spt)
 		'Wscript.Echo(replace(spt,"&&",vbcrlf))

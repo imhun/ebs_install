@@ -91,7 +91,7 @@ Sub dotest
 
 		renv=". ./setenv.sh;. [profile];" '环境变量
     	
-    	sshpre="cd $HOME/[rtdir]; pwd; chmod +x ./*; "&renv&"echo ""NLS_LANG=$NLS_LANG"";"
+    	sshpre="cd $HOME/[rtdir]; pwd; chmod +x ./*; "&renv&"echo ""NLS_LANG=$NLS_LANG"";echo ""ORACLE_HOME=$ORACLE_HOME"";"
     	
     	icount=0
     	resultstr="安装结果："
