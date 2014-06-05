@@ -113,7 +113,7 @@ Sub dotest
 	    		
 	    		prefixhost=replace(rhost,".","_")
 	    		rtdir="install_"&currDate&"_"&rd
-	    		prompt="==("&rhost&"): "
+	    		prompt="****("&rhost&")****: "
 	    	
 			  	'删除下载文件目录	
 			  	condir=currDir & "\"&rtDir
@@ -161,12 +161,12 @@ Sub dotest
 		        'Wscript.echo(sshupf)
 		        'Msgbox (sshinst)
 		        'Wscript.echo(sshdwf)
-		    	spt=cmdproc(sshupf&sshinst&sshdwf,"",1,prompt)
+		    	spt=sshupf&sshinst&sshdwf
 		   
 		    	'Wscript.Echo(replace(spt,"&&",vbcrlf))
 		    	'Wscript.quit
 		    	'ret=ws.run(spt,1,true) '执行下载命令
-		    	exec spt
+		    	exec spt,prompt
 		    	
 		    	instres=getResult(fso,currdir&"\"&prefixhost&"_install.log")		
 		    else

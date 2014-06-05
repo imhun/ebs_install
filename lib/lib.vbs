@@ -99,11 +99,12 @@ Function cmdproc(cmdstr,logfile,isecho,prompt)
 	cmdproc=res
 end function
 
-sub exec(cmdstr)
+sub exec(cmdstr,cmdprompt)
 	Set fso = CreateObject("Scripting.FileSystemObject")  
 	set ws=createobject("wscript.shell")
 	currDir= GetCurrentFolderFullPath(fso,Wscript.ScriptFullName) 
 	cmdfile=currDir&"\cmd.bat"
+	cmdstr=cmdproc(cmdstr,"",1,cmdprompt)
 	Set fcmd = fso.opentextfile(cmdfile, 2, True)
 	fcmd.writeline "@ECHO OFF"
 	fcmd.write replace(cmdstr,"&&",vbcrlf) & vbcrlf

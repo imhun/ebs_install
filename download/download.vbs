@@ -149,34 +149,34 @@ Sub dotest
     						" && echo ==)execute app download completed "'生成app文件
     	end if
     	
-    	prompt="==("&rhost&"): "	
+    	prompt="****("&rhost&")****: "	
     	sshupf=sshupf&" && echo ==)uploaded scripts successful ! " 
     	
-      sshdwf=" && echo ==)begin download file from server "&_
-      				" && "&scpm&" "&ruser&"@"&rhost&":"&rtdir&"/ "&currDir&"\"&rtdir&"\"&_ 
-      				" && "&sshm&" rm -rf ~/"&rtdir&";"""&_ 
-      				" && echo ==)download file completed  ! " '下载文件到本地,删除服务器临时目录
-        
-      'Wscript.echo(sshupf)
-      'Wscript.echo(sshdbd)
-      'Wscript.echo(sshappd)
-      'Wscript.echo(sshdwf)
-        
-	     spt=cmdproc(sshupf&sshdbd&sshappd&sshdwf,"",1,prompt)
+		sshdwf=" && echo ==)begin download file from server "&_
+						" && "&scpm&" "&ruser&"@"&rhost&":"&rtdir&"/ "&currDir&"\"&rtdir&"\"&_ 
+						" && "&sshm&" rm -rf ~/"&rtdir&";"""&_ 
+						" && echo ==)download file completed  ! " '下载文件到本地,删除服务器临时目录
+		  
+		'Wscript.echo(sshupf)
+		'Wscript.echo(sshdbd)
+		'Wscript.echo(sshappd)
+		'Wscript.echo(sshdwf)
+		  
+		spt=sshupf&sshdbd&sshappd&sshdwf
     	
-    	'Wscript.Echo(spt)
-    	'Wscript.Echo(replace(spt,"&&",vbcrlf))
-    	'Wscript.quit
-    	exec spt
-    	
+		'Wscript.Echo(spt)
+		'Wscript.Echo(replace(spt,"&&",vbcrlf))
+		'Wscript.quit
+		exec spt,prompt
+		
 		'set sh=CreateObject("Shell.Application")
 		'sh.ShellExecute "cmd","/k "&prompt1&" && "&sshrm1&" && "&scpu1&" && "&scpu2&" && "&scpu3
-    	
-    	'Set logObj = fso.opentextfile(currdir+"\exc.log", 2, True, -1)    ' 打开输出文件. ForWriting, TristateTrue.
-    	'logObj.write replace(spt,"&&",vbcrlf)    ' 日志.
-	  
-    	'logObj.Close    ' 关闭输出文件.
-    	
+		
+		'Set logObj = fso.opentextfile(currdir+"\exc.log", 2, True, -1)    ' 打开输出文件. ForWriting, TristateTrue.
+		'logObj.write replace(spt,"&&",vbcrlf)    ' 日志.
+		
+		'logObj.Close    ' 关闭输出文件.
+
 		Set filedata = Collection()
     	filecnt=procFiles(fso,currDir&"\"&rtdir,currDir)
     	
