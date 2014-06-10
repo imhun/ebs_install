@@ -83,7 +83,7 @@ Function cmdproc(cmdstr,logfile,isecho,prompt)
 	   	cmdline=row
 	   	logline =""
 	   	if logfile <>"" then
-	   		logline=" >>" & logfile
+	   		logline=" >> " & logfile
 	   	end if
 		 if lcase(left(trim(cmdline),4))="echo" then
 		 	cmdline=replace(cmdline,"echo","echo " & prompt) & logline
@@ -108,7 +108,7 @@ sub exec(cmdstr,cmdprompt)
 	Set fcmd = fso.opentextfile(cmdfile, 2, True)
 	fcmd.writeline "@ECHO OFF"
 	fcmd.write replace(cmdstr,"&&",vbcrlf) & vbcrlf
-	fcmd.writeline "echo press any key to quit"
+	fcmd.writeline "echo Execute completed! press any key to quit!"
 	fcmd.writeline "pause >nul"
 	fcmd.close
 	ret=ws.run(cmdfile,1,true)
@@ -121,8 +121,10 @@ sub exec(cmdstr,cmdprompt)
 end sub
 
 Function getShType(ws,spt)
-	set oexec=ws.exec(spt)
-  	rshtype=replace(replace(oexec.StdOut.Readall,chr(10),""),chr(13),"")
+	set oexec=ws.exec(spt & """" & spt & """")
+	res=oexec.StdOut.Readall
+	Msgbox "res:<" & res & ">"
+  	rshtype=replace(replace(res,chr(10),""),chr(13),"")
   	getShType=rshtype
 end function
 

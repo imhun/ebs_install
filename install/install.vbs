@@ -53,7 +53,6 @@ Sub dotest
 		set data=readConfig(fso,"install_conn.cfg")
 		set odb=data("db")
 		set oahost=data("app")
-		set langobj=data("lang")
 		
     	dbsid=odb("sid")
     	dbuser=odb("user")
@@ -149,12 +148,13 @@ Sub dotest
 		    	sshupf=prm &" && "&sshupf&" && echo upload file successful ! " 
 			
 		    	prm=" && echo begin execute install: "
+		    	rlog=currDate & "_" & prefixhost & "_install.log"
 		    	sshinst=sshm&sshpre&"perl install.pl installpath=$HOME/"&rtdir&" cfgfile=$HOME/"&rtdir&"/install.cfg "&_
-		  						" appsusr="&dbuser&" appspwd="&dbpw&" dbschemapwd="&cuxpw&" logfile=$HOME/"&rtdir&"/"&prefixhost&"_install.log;"""
+		  						" appsusr="&dbuser&" appspwd="&dbpw&" dbschemapwd="&cuxpw&" logfile=$HOME/"&rtdir&"/" & rlog & ";"""
 		  	    sshinst=prm&" && "&sshinst&" && echo execute install completed " '执行安装
 		    		
 		        prm=" && echo begin download file from server "
-		        sshdwf=		scpm&" "&ruser&"@"&rhost&":"&rtdir&"/"&prefixhost&"_install.log "&currDir&"\"&_ 
+		        sshdwf=		scpm&" "&ruser&"@"&rhost&":"&rtdir&"/"& rlog &" "&currDir&"\"&_ 
 		        				" && "&sshm&" rm -rf ~/"&rtdir&";"""
 		        sshdwf=prm&" && "&sshdwf&" && echo download file completed  ! " '下载日志文件到本地,删除服务器临时目录
 		        
@@ -168,7 +168,7 @@ Sub dotest
 		    	'ret=ws.run(spt,1,true) '执行下载命令
 		    	exec spt,prompt
 		    	
-		    	instres=getResult(fso,currdir&"\"&prefixhost&"_install.log")		
+		    	instres=getResult(fso,currdir&"\"&rlog)		
 		    else
 		    	resultstr=resultstr&chr(10)&"应用节点("&rhost&")无需安装"
 	    	end if	    	

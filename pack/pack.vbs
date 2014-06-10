@@ -1,5 +1,5 @@
-' Includeå‡½æ•°ï¼Œé€šè¿‡FSOç»„ä»¶è¯»å–å¤–éƒ¨å‡½æ•°æ–‡ä»¶å†…å®¹
-' é€šè¿‡ExecuteGlobalè½½å…¥
+' Includeº¯Êı£¬Í¨¹ıFSO×é¼ş¶ÁÈ¡Íâ²¿º¯ÊıÎÄ¼şÄÚÈİ
+' Í¨¹ıExecuteGlobalÔØÈë
 Sub include(file)
     Dim fso, f, strcon
     Set fso = CreateObject("Scripting.FileSystemObject")
@@ -15,10 +15,10 @@ Dim srcPath
 Dim destPath
 Dim histPath
 
-' æµ‹è¯•
+' ²âÊÔ
 Sub dotest
 
-		'åŒ…å«æ–‡ä»¶å¤„ç†åº“
+		'°üº¬ÎÄ¼ş´¦Àí¿â
 		include "..\lib\lib.vbs"
 		include "..\lib\lib_install.vbs"
 		include "..\lib\aspjson.vbs"
@@ -26,14 +26,14 @@ Sub dotest
 		Set fso = CreateObject("Scripting.FileSystemObject")
     	currDir= GetCurrentFolderFullPath(fso,Wscript.ScriptFullName) 
 		srcPath=InputBox("Please input source path:")	
-		'srcPath="C:\Users\zjrcu\Desktop\70ä»£ç \ebs_prod"	
+		'srcPath="C:\Users\zjrcu\Desktop\70´úÂë\ebs_prod"	
 		if Not fso.FolderExists(srcPath) Then
 			MsgBox "Source Directory not exist:<" & srcPath & ">"
 			wscript.quit
 	 	end if
 	 	
 		histPath=InputBox("Please input history path:")	
-		'histPath="C:\MyProject\ZJRCU\GAS_EBS_BRANCH\GAS_TST_EBS\70ä»£ç \ebs_prod"
+		'histPath="C:\MyProject\ZJRCU\GAS_EBS_BRANCH\GAS_TST_EBS\70´úÂë\ebs_prod"
 		if Not fso.FolderExists(histPath) Then
 			MsgBox "History Directory not exist:<" & histPath & ">"
 			wscript.quit
@@ -61,7 +61,7 @@ Sub dotest
 		Set filedata = Collection()
     	cnt=dirobj(fso,srcPath,0,"")
     	
-		Set fobjlist = fso.opentextfile(destPath+"\objlist.cfg", 2, True)    ' æ‰“å¼€è¾“å‡ºæ–‡ä»¶. ForWriting, TristateTrue.
+		Set fobjlist = fso.opentextfile(destPath+"\objlist.cfg", 2, True)    ' ´ò¿ªÊä³öÎÄ¼ş. ForWriting, TristateTrue.
 		Set flist= fso.opentextfile(currdir+"\list.csv", 2, True) 
 		
 		sysName="RCUGAS"
@@ -99,11 +99,11 @@ Sub dotest
 					  	if taskType <>"" then 
 							taskSeq=taskSeq+1
 							if okey="TABLE_INDEX" then
-								taskDesc="ç´¢å¼•:" & oname
+								taskDesc="Ë÷Òı:" & oname
 							elseif okey="TABLE_ALTER" or okey ="TABLE" then
-								taskDesc="è¡¨:" & oname
+								taskDesc="±í:" & oname
 							elseif left(okey,6)="TABLE_" then
-								taskDesc="æ‰§è¡Œsqlè„šæœ¬:" &  fname
+								taskDesc="Ö´ĞĞsql½Å±¾:" &  fname
 							else
 								taskDesc=okey & ":" & oname
 							end if
@@ -115,12 +115,12 @@ Sub dotest
 						  	end if
 						  	
 							if taskNewFlag=1 then
-								taskDesc="åˆ›å»º" & taskDesc
+								taskDesc="´´½¨" & taskDesc
 							elseif taskNewFlag=0 then
-								taskDesc="ä¿®æ”¹" & taskDesc
+								taskDesc="ĞŞ¸Ä" & taskDesc
 							end if
 							
-							lineStr= "1,å¾æ°¸æ¡‚," & sysName & "_ZB_0" & obj("eventNo") & "," & obj("eventName") & ",," & taskNewFlag &_
+							lineStr= "1,ĞìÓÀ¹ğ," & sysName & "_ZB_0" & obj("eventNo") & "," & obj("eventName") & ",," & taskNewFlag &_
 							 "," & taskSeq & "," & taskType & "," & sysName & "," & taskDesc & "," & taskCmd & ",1," & taskParam & ",,ebsapp,WAITING,,,,ebs1,0"
 							 'Msgbox linestr
 							 'Wscript.quit
@@ -141,7 +141,7 @@ Sub dotest
 	  	next
 	
 		
-		fobjlist.Close    ' å…³é—­è¾“å‡ºæ–‡ä»¶.
+		fobjlist.Close    ' ¹Ø±ÕÊä³öÎÄ¼ş.
 		flist.close
 		MsgBox "OK! " & cnt & " items.", vbOKOnly, "allfiles"
 End Sub
