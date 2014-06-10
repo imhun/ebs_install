@@ -121,9 +121,8 @@ sub exec(cmdstr,cmdprompt)
 end sub
 
 Function getShType(ws,spt)
-	set oexec=ws.exec(spt & """" & spt & """")
+	set oexec=ws.exec(spt)
 	res=oexec.StdOut.Readall
-	Msgbox "res:<" & res & ">"
   	rshtype=replace(replace(res,chr(10),""),chr(13),"")
   	getShType=rshtype
 end function
