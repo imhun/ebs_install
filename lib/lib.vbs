@@ -76,20 +76,22 @@ Function GetMAC()
     Set mc = nothing
 End Function
 
-Function cmdproc(cmdstr,logfile,isecho,prompt) 
+Function cmdproc(cmdstr,prompt) 
 	a=split(cmdstr,"&&")
 	res=""
 	for each row in a
 	   	cmdline=row
-	   	logline =""
-	   	if logfile <>"" then
-	   		logline=" >> " & logfile
-	   	end if
-		 if lcase(left(trim(cmdline),4))="echo" then
-		 	cmdline=replace(cmdline,"echo","echo " & prompt) & logline
-		 else
-		  	cmdline="echo " & prompt & cmdline & logline & " && " & cmdline & logline
+	   
+		if lcase(left(trim(cmdline),4))="echo" then
+		 	cmdline=replace(cmdline,"echo","echo " & prompt) 
+		else
+			rd=""
+			if instr(cmdline,"2>&1")>0 then
+				rd=" >nul"
+			end if
+			cmdline="echo " & prompt & cmdline & rd & " && " & cmdline 
 		end if
+		
 		if res="" then
 			res=cmdline
 	 	else
@@ -99,17 +101,22 @@ Function cmdproc(cmdstr,logfile,isecho,prompt)
 	cmdproc=res
 end function
 
-sub exec(cmdstr,cmdprompt)
+sub exec( cmdstr, cmdprompt, cmdkeep)
 	Set fso = CreateObject("Scripting.FileSystemObject")  
 	set ws=createobject("wscript.shell")
 	currDir= GetCurrentFolderFullPath(fso,Wscript.ScriptFullName) 
 	cmdfile=currDir&"\cmd.bat"
-	cmdstr=cmdproc(cmdstr,"",1,cmdprompt)
+	if fso.fileexists(cmdfile) then
+		fso.deletefile cmdfile
+	end if
+	cmdstr=cmdproc(cmdstr,cmdprompt)
 	Set fcmd = fso.opentextfile(cmdfile, 2, True)
 	fcmd.writeline "@ECHO OFF"
 	fcmd.write replace(cmdstr,"&&",vbcrlf) & vbcrlf
-	fcmd.writeline "echo Execute completed! press any key to quit!"
-	fcmd.writeline "pause >nul"
+	if cmdkeep then
+		fcmd.writeline "echo Execute completed! press any key to quit!"
+		fcmd.writeline "pause >nul"
+	end if
 	fcmd.close
 	ret=ws.run(cmdfile,1,true)
 	
@@ -120,11 +127,23 @@ sub exec(cmdstr,cmdprompt)
 	set ws=Nothing
 end sub
 
-Function getShType(ws,spt)
-	set oexec=ws.exec(spt)
-	res=oexec.StdOut.Readall
-  	rshtype=replace(replace(res,chr(10),""),chr(13),"")
-  	getShType=rshtype
+Function getShType( cmd, prompt, logfile)
+	Set fso = CreateObject("Scripting.FileSystemObject")  
+	logline=" >> " & logfile & " 2>&1"
+	cmd=cmd & " && " & cmd & logline
+	exec cmd,prompt,0
+	
+	if fso.fileexists(logfile) then
+		Set f = fso.OpenTextFile(logfile, 1)
+		strRet = f.ReadAll
+		strRet=replace(replace(strRet,chr(10),""),chr(13),"")
+		f.Close
+		fso.deletefile logfile
+		Set f=Nothing
+	end if
+	
+	set fso=Nothing
+	getShType=strRet
 end function
 
 Function Collection()

@@ -120,7 +120,7 @@ Sub dotest
 					fso.deletefolder(condir)
 				end if
 				
-				rshtype=getShType(ws,sshm & "echo $0""")
+				rshtype=getShType("echo 服务器连接测试，获取shell类型： && " & sshm & "echo $0""",prompt,currDir & "\cmd.log")
 				if rshtype ="ksh" then
 			  		rprof="~/.profile"
 			    elseif rshtype="bash" then
@@ -166,7 +166,7 @@ Sub dotest
 		    	'Wscript.Echo(replace(spt,"&&",vbcrlf))
 		    	'Wscript.quit
 		    	'ret=ws.run(spt,1,true) '执行下载命令
-		    	exec spt,prompt
+		    	exec spt,prompt,1
 		    	
 		    	instres=getResult(fso,currdir&"\"&rlog)		
 		    else

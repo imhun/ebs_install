@@ -111,8 +111,10 @@ Sub dotest
 		
     	sshm=currPDir&"\lib\plink.exe -ssh  -pw "&rpw&" "&ruser&"@"&rhost&" """ 'ssh命令
     	
+    	prompt="****("&rhost&")****: "	
 		set ws=createobject("wscript.shell")
-		rshtype=getShType(ws,sshm & "echo $0""")
+		rshtype=getShType("echo 服务器连接测试，获取shell类型： && " & sshm & "echo $0""",prompt,currDir & "\cmd.log")
+	
 		if rshtype ="ksh" then
 	  		rprof="~/.profile"
 	    elseif rshtype="bash" then
@@ -148,7 +150,6 @@ Sub dotest
     						" && echo ==)execute app download completed "'生成app文件
     	end if
     	
-    	prompt="****("&rhost&")****: "	
     	sshupf=sshupf&" && echo ==)uploaded scripts successful ! " 
     	
 		sshdwf=" && echo ==)begin download file from server "&_
@@ -166,7 +167,7 @@ Sub dotest
 		'Wscript.Echo(spt)
 		'Wscript.Echo(replace(spt,"&&",vbcrlf))
 		'Wscript.quit
-		exec spt,prompt
+		exec spt,prompt,1
 		
 		'set sh=CreateObject("Shell.Application")
 		'sh.ShellExecute "cmd","/k "&prompt1&" && "&sshrm1&" && "&scpu1&" && "&scpu2&" && "&scpu3
