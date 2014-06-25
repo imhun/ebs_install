@@ -127,7 +127,7 @@ sub exec( cmdstr, cmdprompt, cmdkeep)
 	set ws=Nothing
 end sub
 
-Function getShType( cmd, prompt, logfile)
+Function getcmd( cmd, prompt, logfile)
 	Set fso = CreateObject("Scripting.FileSystemObject")  
 	logline=" >> " & logfile & " 2>&1"
 	cmd=cmd & " && " & cmd & logline
@@ -136,14 +136,13 @@ Function getShType( cmd, prompt, logfile)
 	if fso.fileexists(logfile) then
 		Set f = fso.OpenTextFile(logfile, 1)
 		strRet = f.ReadAll
-		strRet=replace(replace(strRet,chr(10),""),chr(13),"")
 		f.Close
 		fso.deletefile logfile
 		Set f=Nothing
 	end if
 	
 	set fso=Nothing
-	getShType=strRet
+	getcmd=strRet
 end function
 
 Function Collection()

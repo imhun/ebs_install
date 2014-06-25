@@ -115,11 +115,7 @@ Sub dotest
 		set ws=createobject("wscript.shell")
 		rshtype=getShType("echo 服务器连接测试，获取shell类型： && " & sshm & "echo $0""",prompt,currDir & "\cmd.log")
 	
-		if rshtype ="ksh" then
-	  		rprof="~/.profile"
-	    elseif rshtype="bash" then
-	    	rprof="~/.bash_profile"
-	  	end if
+		rprof="~/" & rshtype
     		
     	listfile=""
     	fmfile="perl -pi -e 's/^\xEF\xBB\xBF|\xFF\xFE//' [file]; perl -pi -e 's/\r\n/\n/' [file];" '列表文件格式化，去除UTF-8的BOM头，windows换行符\r\n转换为unix换行符\n\

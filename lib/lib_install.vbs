@@ -30,7 +30,7 @@ sub getTypeCfg(fso)
 	next
 end sub
 
-'Ëé∑ÂèñÊñá‰ª∂Â±ûÊÄß
+'ªÒ»°Œƒº˛ Ù–‘
 Function getObjType(fso,fobj,byref okey,byref oname,byref olang,byref seq,byref instType,byref objDir)
 	sbase = ""
 	otype=""
@@ -176,7 +176,7 @@ end function
 Function fileobj(fso,fobj)
     otype=""
     sbase = ""
-    fext = GetFileExtAndBaseName(fobj.name, sbase)    ' √Ä¬©√ï¬π√É√ª.
+    fext = GetFileExtAndBaseName(fobj.name, sbase)    ' ®§??1??.
 	otype=getObjType(fso,fobj,okey,oname,olang,seq,instType,objDir)
 	set obj=Collection()
 	obj("key")= seq & "_" & okey
@@ -287,3 +287,23 @@ function procFiles(fso,srcpath,destPath)
   	next
   	procFiles=filecnt
 end function
+
+Function getShType( cmd, prompt, logfile)
+
+	strRet=getcmd(cmd,prompt,logfile)
+	
+	strRet=replace(replace(strRet,chr(10),""),chr(13),"")
+	
+	if strRet ="ksh" then
+  		rprofile=".profile"
+    elseif strRet="bash" then
+    	rprofile=".bash_profile"
+    else
+		Msgbox "≤ª÷ß≥÷µƒshell¿‡–Õ:" & strRet & "£¨Ω≈±æΩ´Ω· ¯÷¥––£¨«ÎºÏ≤Èª∑æ≥–≈œ¢£°"
+		Wscript.quit
+  	end if
+	
+	getShType=rprofile
+end function
+
+

@@ -121,11 +121,7 @@ Sub dotest
 				end if
 				
 				rshtype=getShType("echo 服务器连接测试，获取shell类型： && " & sshm & "echo $0""",prompt,currDir & "\cmd.log")
-				if rshtype ="ksh" then
-			  		rprof="~/.profile"
-			    elseif rshtype="bash" then
-			    	rprof="~/.bash_profile"
-			  	end if
+				rprof="~/" & rshtype
 			  	
 				sshpre=replace(sshpre,"[profile]",rprof)
 				sshpre=replace(sshpre,"[rtdir]",rtdir)
