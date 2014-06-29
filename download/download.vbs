@@ -137,7 +137,7 @@ Sub dotest
     		listfile=dblist
     		sshupf=sshupf&" && "&scpm&" "&currDir&"\"&listfile&" "&ruser&"@"&rhost&":"&rtdir  '上传objlist
 	    	sshdbd=" && echo ==)begin execute db download:  "&_
-	    					" && "&sshm&sshpre&replace(fmfile,"[file]",listfile)&"slc_getddl_all.sh "&dbsid&" "&dbuser&" "&dbpw&" -f "&dblist&";"""&_ 
+	    					" && "&sshm&sshpre&replace(fmfile,"[file]",listfile)&"sh slc_getddl_all.sh "&dbsid&" "&dbuser&" "&dbpw&" -f "&dblist&";"""&_ 
 	    					" && echo ==)execute db download completed  ! "     	'生成db文件
 	    end if	    	
 	    	
