@@ -88,7 +88,7 @@ Sub dotest
     	
 		set ws=createobject("wscript.shell")
 
-		renv=". ./setenv.sh;. [profile];" '环境变量
+		renv="./setenv.sh;. [profile];" '环境变量
     	
     	sshpre="cd $HOME/[rtdir]; pwd; chmod +x ./*; "&renv&"echo ""NLS_LANG=$NLS_LANG"";echo ""ORACLE_HOME=$ORACLE_HOME"";"
     	
