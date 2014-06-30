@@ -86,9 +86,9 @@ Sub dotest
 		
     	sshcm=currPDir&"\lib\plink.exe -ssh  -pw [pwd] [user]@[host] """ 'ssh命令
     	
-		set ws=createobject("wscript.shell")
+		'set ws=createobject("wscript.shell")
 
-		renv="./setenv.sh;. [profile];" '环境变量
+		renv="./setenv.sh;. ./profile.sh;" '环境变量
     	
     	sshpre="cd $HOME/[rtdir]; pwd; chmod +x ./*; "&renv&"echo ""NLS_LANG=$NLS_LANG"";echo ""ORACLE_HOME=$ORACLE_HOME"";"
     	
@@ -120,8 +120,8 @@ Sub dotest
 					fso.deletefolder(condir)
 				end if
 				
-				rshtype=getShType("echo 服务器连接测试，获取shell类型： && " & sshm & "echo $0""",prompt,currDir & "\cmd.log")
-				rprof="~/" & rshtype
+				'rshtype=getShType("echo 服务器连接测试，获取shell类型： && " & sshm & "echo $0""",prompt,currDir & "\cmd.log")
+				'rprof="~/" & rshtype
 			  	
 				sshpre=replace(sshpre,"[profile]",rprof)
 				sshpre=replace(sshpre,"[rtdir]",rtdir)

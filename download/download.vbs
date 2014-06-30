@@ -112,15 +112,14 @@ Sub dotest
     	sshm=currPDir&"\lib\plink.exe -ssh  -pw "&rpw&" "&ruser&"@"&rhost&" """ 'ssh命令
     	
     	prompt="****("&rhost&")****: "	
-		set ws=createobject("wscript.shell")
-		rshtype=getShType("echo 服务器连接测试，获取shell类型： && " & sshm & "echo $0""",prompt,currDir & "\cmd.log")
-	
-		rprof="~/" & rshtype
+		'set ws=createobject("wscript.shell")
+		'rshtype=getShType("echo 服务器连接测试，获取shell类型： && " & sshm & "echo $0""",prompt,currDir & "\cmd.log")
+		'rprof="~/" & rshtype
     		
     	listfile=""
     	fmfile="perl -pi -e 's/^\xEF\xBB\xBF|\xFF\xFE//' [file]; perl -pi -e 's/\r\n/\n/' [file];" '列表文件格式化，去除UTF-8的BOM头，windows换行符\r\n转换为unix换行符\n\
 
-		renv="NLS_LANG='"&nlslang&"';export NLS_LANG;./setenv.sh;. "&rprof&";" '环境变量
+		renv="NLS_LANG='"&nlslang&"';export NLS_LANG;./setenv.sh;. ./profile.sh;" '环境变量
     	
     	sshpre="cd $HOME/"&rtdir&"; chmod +x ./*;"&renv&"echo ""NLS_LANG=$NLS_LANG"";echo ""ORACLE_HOME=$ORACLE_HOME"";"
     	
