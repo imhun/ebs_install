@@ -31,7 +31,7 @@ sub getTypeCfg(fso)
 end sub
 
 '获取文件属性
-Function getObjType(fso,fobj,byref okey,byref oname,byref olang,byref seq,byref instType,byref objDir)
+Function getObjType(fso,fobj,byref okey,byref owner,byref oname,byref olang,byref seq,byref instType,byref objDir)
 	sbase = ""
 	otype=""
 	okey=""
@@ -41,6 +41,7 @@ Function getObjType(fso,fobj,byref okey,byref oname,byref olang,byref seq,byref 
 	seq=""
 	instType=""
 	objDir=""
+	objname=""
 	fpath=fobj.path
 	path=fobj.ParentFolder
     sext = Lcase(GetFileExtAndBaseName(fobj.name, sbase)) 
@@ -77,7 +78,14 @@ Function getObjType(fso,fobj,byref okey,byref oname,byref olang,byref seq,byref 
 								if left(strline,keylen)=keyval then
 									otype=filekey("type")
 									oarr=split(trim(replace(strline,keyval,"")) ," ")
-									oname=oarr(0)
+									oarrb=split(oarr(0),".")
+									if UBound(oarrb)=0 then
+										owner="APPS"
+										oname=oarrb(0)
+									else
+										owner=oarrb(0)
+										oname=oarrb(1)
+									end if
 									exit do
 								end if
 							next
@@ -105,7 +113,6 @@ Function getObjType(fso,fobj,byref okey,byref oname,byref olang,byref seq,byref 
 							oname=strline
 						elseif otype="next_line" then
 							otype=strline
-							oname=owner & "." & oname
 							exit do
 						end if
 						
@@ -123,6 +130,7 @@ Function getObjType(fso,fobj,byref okey,byref oname,byref olang,byref seq,byref 
 			f.close
 		else
 			otype=keytype
+			owner="CUX"
   			oname=Ucase(sbase)
   		end if
   		
@@ -132,9 +140,9 @@ Function getObjType(fso,fobj,byref okey,byref oname,byref olang,byref seq,byref 
 	    	
 	    	if typeobj.exists("app_pre") then
 				if typeobj("app_pre")="Y" then
-					oname=oname & "." & owner
-				else
-					oname=owner & "." & oname
+					objname=owner
+					owner=oname
+					oname=objname
 				end if
 			end if
 			
@@ -147,10 +155,6 @@ Function getObjType(fso,fobj,byref okey,byref oname,byref olang,byref seq,byref 
 	    	objdir=typeobj("dir")
     		seq=typeobj("seq")
 			instType=cfg("inst")
-				
-			if oname<>"" and instr(oname,".")=0 then
-				oname="CUX." & oname
-			end if
 			
 			if cfg.exists("pathkey")  then
 				if instr(path,"\" & cfg("pathkey") & "\")>0 then
@@ -177,12 +181,16 @@ Function fileobj(fso,fobj)
     otype=""
     sbase = ""
     fext = GetFileExtAndBaseName(fobj.name, sbase)    ' à??1??.
-	otype=getObjType(fso,fobj,okey,oname,olang,seq,instType,objDir)
+	otype=getObjType(fso,fobj,okey,owner,oname,olang,seq,instType,objDir)
 	set obj=Collection()
 	obj("key")= seq & "_" & okey
 	obj("typekey")= okey
 	obj("type")=otype
+	obj("owner")=owner
 	obj("name")=oname
+	if oname<>"" then
+		obj("objname")=owner & "." & oname
+	end if
 	obj("lang")=olang
 	if olang<>"" then
 		obj("langDir")="\" & olang & "\"
@@ -194,6 +202,7 @@ Function fileobj(fso,fobj)
 	obj("objDir")=objDir
 	obj("ext")=fext
 	obj("path")=fobj.path
+	obj("parentpath")=fobj.ParentFolder
 	obj("fname")=fobj.name
 	 	
 	set fileobj=obj
