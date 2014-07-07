@@ -25,15 +25,15 @@ Sub dotest
 		
 		Set fso = CreateObject("Scripting.FileSystemObject")
     	currDir= GetCurrentFolderFullPath(fso,Wscript.ScriptFullName) 
-		'srcPath=InputBox("Please input source path:")	
-		srcPath="C:\Users\zjrcu\Desktop\70代码\ebs_prod"	
+		srcPath=InputBox("请输入上线代码目录，相对目录为ebs_prod:")	
+		'srcPath="C:\Users\zjrcu\Desktop\70代码\ebs_prod"	
 		if Not fso.FolderExists(srcPath) Then
 			MsgBox "Source Directory not exist:<" & srcPath & ">"
 			wscript.quit
 	 	end if
 	 	
-		'histPath=InputBox("Please input history path:")	
-		histPath="C:\MyProject\ZJRCU\GAS_EBS_BRANCH\GAS_TST_EBS\70代码\ebs_prod"
+		histPath=InputBox("请输入历史版本目录，相对目录为ebs_prod:")	
+		'histPath="C:\Users\zjrcu\Desktop\zjrc_test\70代码\ebs_prod"
 		if Not fso.FolderExists(histPath) Then
 			MsgBox "History Directory not exist:<" & histPath & ">"
 			wscript.quit
@@ -82,11 +82,16 @@ Sub dotest
 				    fext=obj("ext")
 				    fname=obj("fname")
 				    lang=obj("lang")
+				    objdir=obj("objDir") 
+				    langdir=obj("langDir")  
+				    apphost="ebs1"
+				    appuser="ebsapp"
 				    
 				   	histfile=replace(obj("path"),srcPath,histPath) 	
-				    relateDir=  obj("objDir") & obj("langDir")  
+				    relateDir= objdir & langdir
+				    newRelDir=relateDir
 				    newfile=fname
-				    if fext="pls" or fext="plb" or fext="sql" or fext="ldt" or fext="fmb" or fext="rtf" or fext="rdf" or fext="wft" then
+				    if fext="pls" or fext="plb" or fext="sql" or fext="ldt" or fext="fmb" or fext="pll" or fext="rtf" or fext="rdf" or fext="wft" then
 				    	stype=otype
 						taskType=""
 						taskDesc=""
@@ -94,10 +99,16 @@ Sub dotest
 						taskCmd="NULL"
 						taskParam=objname
 						
+						if fext="fmb" or fext="pll" or fext="rdf" then	
+							apphost="ebs1|ebs2"
+							appuser="ebsapp|ebsapp"
+						end if
+						
 						if  fext="pls" or fext="plb" or fext="sql" then
 							taskCmd=fname
-							if  okey="TABLE"  or okey="TABLE_INSERT" or okey="TABLE_UPDATE" or okey="TABLE_DELETE" then
+							if  okey="TABLE"  or okey="TABLE_INDEX" or okey="TABLE_INSERT" or okey="TABLE_UPDATE" or okey="TABLE_DELETE" then
 								taskType="ORA_SQL_TMP"
+								newRelDir="table"  & langdir
 							elseif okey="TABLE_ALTER" then
 								taskType="ORA_TABLE_ONLY"
 							else
@@ -112,20 +123,29 @@ Sub dotest
 							elseif okey="PROFILE" then
 								taskCmd="PROFILE_VALUES=N"
 							end if
-						elseif fext="fmb" then
-							taskType= "*_" & lang & "_FORM"
-						elseif fext="pll" then
-							taskType= "*_RESOURCE"
+						elseif fext="fmb" or fext="pll" then
+							if lang="" then
+								lang="US"
+							end if
+							taskType= okey & "_" & lang & "_FORM"
+							taskParam=okey & "|" & oname
 						elseif fext="wft" then
-							taskType= "*_" & lang & "_WFLOAD"
+							taskType= "_" & lang & "_WFLOAD"
+							taskParam= oname
 						elseif fext="rtf" then
-							taskType= "*_" & lang & "_RPTLOAD"
+							taskType= okey & "_" & lang & "_RPTLOAD"
+							taskParam=okey & "|" & objname
+						elseif fext="rdf" then
+							taskType=   "REPORTS_" & lang & "_SQLFILE"
+							taskCmd=fname
+							taskParam=""
 					  	end if
 					  	
 					  	if taskType <>"" then 
 							taskSeq=taskSeq+1
 							if okey="TABLE_INDEX" then
 								taskDesc="索引:" & objname
+								taskParam=""
 							elseif okey ="TABLE" then
 								taskDesc="表:" & objname
 							elseif okey="TABLE_ALTER" then
@@ -138,9 +158,9 @@ Sub dotest
 								taskDesc=okey & ":" & objname
 							end if
 							
-							cpFile fso,obj("path"),destPath & "\" & sysName & "\" &  obj("eventName") & "\new_version\" &  relateDir & newfile
+							cpFile fso,obj("path"),destPath & "\" & sysName & "\" &  obj("eventName") & "\new_version\" &  newRelDir & fname
 						  	if fso.fileexists(histfile) then
-						  		cpFile fso,histfile,destPath & "\" & sysName & "\" &  obj("eventName") & "\old_version\" &  relateDir & newfile
+						  		cpFile fso,histfile,destPath & "\" & sysName & "\" &  obj("eventName") & "\old_version\" &  newRelDir & fname
 						  		taskNewFlag=0
 						  	end if
 						  	
@@ -151,7 +171,7 @@ Sub dotest
 							end if
 							
 							lineStr= "1," & taskUser & "," & sysName & "_ZB_0" & obj("eventNo") & "," & obj("eventName") & ",," & taskNewFlag &_
-							 "," & taskSeq & "," & taskType & "," & sysName & "," & taskDesc & "," & taskCmd & ",1," & taskParam & ",,ebsapp,WAITING,,,,ebs1,0"
+							 "," & taskSeq & "," & taskType & "," & sysName & "," & taskDesc & "," & taskCmd & ",1," & taskParam & ",," & appuser & ",WAITING,,,," & apphost & ",0"
 							 'Msgbox linestr
 							 'Wscript.quit
 							flist.writeline lineStr
