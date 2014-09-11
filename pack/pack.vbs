@@ -33,11 +33,21 @@ Sub dotest
 	 	end if
 	 	
 		histPath=InputBox("请输入历史版本目录，相对目录为ebs_prod:")	
-		'histPath="C:\Users\zjrcu\Desktop\zjrc_test\70代码\ebs_prod"
+		'histPath="C:\Users\zjrcu\Desktop\TEST\70代码\ebs_prod"
 		if Not fso.FolderExists(histPath) Then
 			MsgBox "History Directory not exist:<" & histPath & ">"
 			wscript.quit
 	 	end if
+	 	
+	 	onlineDateStr=InputBox("请输入上线日期，格式:YYYY-MM-DD:")	
+		'onlineDateStr="2014-07-25"
+		if onlineDateStr="" Then
+			MsgBox "上线日期必须输入!"
+			wscript.quit
+	 	end if
+	 	
+	 	onlineDate=cdate(onlineDateStr)
+	 	onlineDateS=CStr(Year(onlineDate))&Right("0"&Month(onlineDate),2)&Right("0"&Day(onlineDate),2)
 	 	
 		destPath = currDir
 		
@@ -65,7 +75,14 @@ Sub dotest
 		Set flist= fso.opentextfile(currdir+"\list.csv", 2, True) 
 		
 		sysName="RCUGAS"
+		sysUser=sysName & "_ZB"
 		taskUser="徐永桂"
+		
+		onlineDir=currdir & "\" & onlineDateS & "\"
+		createDir onlineDir
+		
+		Set fsql= fso.opentextfile(onlineDir +  "\" & onlineDateS & "_" & sysUser & ".sql", 2, True) 
+		
 		for each row in filedata
 			set eventObj=filedata(row)
 		    keys=QuickSort(eventObj.keys)
@@ -100,8 +117,8 @@ Sub dotest
 						taskParam=objname
 						
 						if fext="fmb" or fext="pll" or fext="rdf" then	
-							apphost="ebs1|ebs2"
-							appuser="ebsapp|ebsapp"
+							apphost="ebs1|ebs2|ebs3|ebs4"
+							appuser="ebsapp|ebsapp|ebsapp|ebsapp"
 						end if
 						
 						if  fext="pls" or fext="plb" or fext="sql" then
@@ -158,9 +175,9 @@ Sub dotest
 								taskDesc=okey & ":" & objname
 							end if
 							
-							cpFile fso,obj("path"),destPath & "\" & sysName & "\" &  obj("eventName") & "\new_version\" &  newRelDir & fname
+							cpFile fso,obj("path"),destPath & "\" & onlineDateS & "\" & sysName & "\" &  obj("eventName") & "\new_version\" &  newRelDir & fname
 						  	if fso.fileexists(histfile) then
-						  		cpFile fso,histfile,destPath & "\" & sysName & "\" &  obj("eventName") & "\old_version\" &  newRelDir & fname
+						  		cpFile fso,histfile,destPath & "\" & onlineDateS & "\" & sysName & "\" &  obj("eventName") & "\old_version\" &  newRelDir & fname
 						  		taskNewFlag=0
 						  	end if
 						  	
@@ -170,11 +187,21 @@ Sub dotest
 								taskDesc="修改" & taskDesc
 							end if
 							
-							lineStr= "1," & taskUser & "," & sysName & "_ZB_0" & obj("eventNo") & "," & obj("eventName") & ",," & taskNewFlag &_
-							 "," & taskSeq & "," & taskType & "," & sysName & "," & taskDesc & "," & taskCmd & ",1," & taskParam & ",," & appuser & ",WAITING,,,," & apphost & ",0"
-							 'Msgbox linestr
-							 'Wscript.quit
-							flist.writeline lineStr
+							if taskNewFlag=0 and okey="TABLE" then
+								taskSeq=taskseq-1
+							else
+								sqlStr="insert into dwmm.online_metadata(ONLINE_DT,BATCH_NO,JOB_OWNER,EVENT_ID,EVENT_NM,PRE_EVENT_ID,IS_NEW_JOB_F,EVENT_SEQ," &_
+											 "JOB_TP,SYS_TP,JOB_DSC,JOB_CMD,IS_ND_ROLLBK_F,PARAMS,RUN_USER,JOB_STS,RUN_HOST,RELATE_EVENT_ROLL) values " & chr(10) &_
+											"('" & onlineDateStr & "',1,'" & taskUser& "    ','" & sysUser & "_" & obj("eventNo") & "','" & obj("eventName") & "',''," & taskNewFlag &_
+											 "," & taskSeq & ",'" & taskType & "','" & sysName & "','" & taskDesc & "','" & taskCmd & "',1,'" & taskParam & "','" & appuser & "','WAITING','" & apphost & "',0);"
+								
+								lineStr= "1," & taskUser & "," & sysUser & "_0" & obj("eventNo") & "," & obj("eventName") & ",," & taskNewFlag &_
+								 "," & taskSeq & "," & taskType & "," & sysName & "," & taskDesc & "," & taskCmd & ",1," & taskParam & ",," & appuser & ",WAITING,,,," & apphost & ",0"
+								 'Msgbox linestr
+								 'Wscript.quit
+								fsql.writeline sqlStr
+								flist.writeline lineStr
+						 	end if
 						end if
 					else
 						stype=okey
@@ -193,6 +220,7 @@ Sub dotest
 		
 		fobjlist.Close    ' 关闭输出文件.
 		flist.close
+		fsql.close
 		MsgBox "OK! " & cnt & " items.", vbOKOnly, "allfiles"
 End Sub
 

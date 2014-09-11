@@ -157,7 +157,7 @@ ORA_SQL_TMP|ORA_TABLE_ONLY|ORA_VIEW|ORA_PROCEDURE|ORA_FUNCTION|ORA_PACKAGE_SPEC|
         echo "select count(*) from dba_constraints where owner='${schema}' and table_name='${objname}';" >>${exesqlfile}
         SpoolSqlFileEnd ${exesqlfile}
         constraints_cnt=`sqlplus -L -S ${LOGIN_STR} @${exesqlfile}|tr -d '\t| '`
-        if [[ $constraints_cnt == *[!0-9]* ]] || [ $constraints_cnt -eq 255 ]
+        if [[ $constraints_cnt != +([0-9]) ]] || [ $constraints_cnt -eq 255 ]
         then
             ECHO_ERROR_LOG "ERROR: 获取表[${objname}]CONSTRAINT个数失败[${constraints_cnt}]"
             res=1
@@ -169,7 +169,7 @@ ORA_SQL_TMP|ORA_TABLE_ONLY|ORA_VIEW|ORA_PROCEDURE|ORA_FUNCTION|ORA_PACKAGE_SPEC|
             echo "select count(*) from dba_indexes a where table_owner='${schema}' and table_name='${objname}' and generated='N' and not exists(select 1 from dba_constraints b where owner='${schema}' and table_name='${objname}' and b.index_owner=a.owner and b.index_name=a.index_name);" >>${exesqlfile}
             SpoolSqlFileEnd ${exesqlfile}
             index_cnt=`sqlplus -L -S ${LOGIN_STR} @${exesqlfile}|tr -d '\t| '`
-            if [[ $index_cnt == *[!0-9]* ]] || [ $index_cnt -eq 255 ]
+            if [[ $index_cnt != +([0-9]) ]] || [ $index_cnt -eq 255 ]
             then
                 ECHO_ERROR_LOG "ERROR: 获取表[${objname}]索引个数失败[${index_cnt}]"
                 res=1
@@ -181,7 +181,7 @@ ORA_SQL_TMP|ORA_TABLE_ONLY|ORA_VIEW|ORA_PROCEDURE|ORA_FUNCTION|ORA_PACKAGE_SPEC|
                 echo "select sum(cnt) from (select count(*) cnt from dba_col_comments where owner='${schema}' and table_name='${objname}' and comments is not NULL union all select count(*) cnt from dba_tab_comments where owner='${schema}' and table_name='${objname}' and comments is not NULL union all select count(*) cnt from dba_mview_comments where mview_name='${objname}' and comments is not NULL);" >>${exesqlfile}
                 SpoolSqlFileEnd ${exesqlfile}
                 comment_cnt=`sqlplus -L -S ${LOGIN_STR} @${exesqlfile}|tr -d '\t| '`
-                if [[ $comment_cnt == *[!0-9]* ]] || [ $comment_cnt -eq 255 ]
+                if [[ $comment_cnt != +([0-9]) ]] || [ $comment_cnt -eq 255 ]
                 then
                     ECHO_ERROR_LOG "ERROR: 获取表[${objname}]COMMENT个数失败[${comment_cnt}]"
                     res=1
@@ -193,7 +193,7 @@ ORA_SQL_TMP|ORA_TABLE_ONLY|ORA_VIEW|ORA_PROCEDURE|ORA_FUNCTION|ORA_PACKAGE_SPEC|
                     echo "select count(*) from dba_tab_privs where owner='${schema}' and table_name='${objname}';" >>${exesqlfile}
                     SpoolSqlFileEnd ${exesqlfile}
                     grant_cnt=`sqlplus -L -S ${LOGIN_STR} @${exesqlfile}|tr -d '\t| '`
-                    if [[ $grant_cnt == *[!0-9]* ]] || [ $grant_cnt -eq 255 ]
+                    if [[ $grant_cnt != +([0-9]) ]] || [ $grant_cnt -eq 255 ]
                     then
                         ECHO_ERROR_LOG "ERROR: 获取表[${objname}]GRANT个数失败[${grant_cnt}]"
                         res=1
