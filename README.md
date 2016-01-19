@@ -11,3 +11,8 @@ ebs程序自动化下载部署工具
 下载脚本:download.vbs
 
 详细说明请阅读说明文档《EBS代码自动部署工具.docx》
+
+<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=default"></script>    
+
+
+$$x=\frac{-b\pm\sqrt{b^2-4ac}}{2a}$$
